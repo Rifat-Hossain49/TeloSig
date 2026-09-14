@@ -82,3 +82,7 @@ of the pipeline.
 * Barthel FP *et al.* *Nat Genet* 2017;49:349–357. · Sieverling L *et al.* *Nat Commun* 2020;11:733.
 * Noureen N *et al.* (EXTEND) *Nat Commun* 2021;12:139. · Vivian J *et al.* (Toil) *Nat Biotechnol* 2017.
 * Liu J *et al.* (TCGA-CDR) *Cell* 2018. · Ghandi M *et al.* (CCLE) *Nature* 2019. · PCAWG, *Nature* 2020.
+
+## License
+
+Code is released under the [MIT License](LICENSE). Input data come from the public sources listed above and remain subject to their original terms.
