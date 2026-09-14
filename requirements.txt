@@ -1,0 +1,10 @@
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+requests
+openpyxl
+torch
+xenaPython @ git+https://github.com/ucscXena/xenaPython
+statsmodels

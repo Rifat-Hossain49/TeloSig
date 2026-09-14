@@ -1,0 +1,14 @@
+# secrets
+.env
+# downloaded and derived data (rebuilt by data_build.py)
+data/raw/
+data/processed/
+*.npy
+# run outputs
+results/
+figures/
+kaggle_stage/
+kaggle_outputs/
+# python
+__pycache__/
+*.pyc
