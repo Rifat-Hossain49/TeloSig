@@ -1,0 +1,22 @@
+{
+ "python": "3.12.13",
+ "numpy": "2.0.2",
+ "pandas": "2.3.3",
+ "scikit-learn": "1.6.1",
+ "torch": "2.10.0+cpu",
+ "machine": "x86_64",
+ "cpus": 4,
+ "args": {
+  "tasks": "alt_pan",
+  "models": null,
+  "quick": false,
+  "no_tune": false,
+  "no_transcriptome": false,
+  "folds": 5,
+  "repeats": 5,
+  "random_sets": 1000,
+  "tune_iters": 8
+ },
+ "started": "2026-09-20 04:55:44",
+ "minutes": 26.61469467083613
+}

@@ -12,9 +12,20 @@ from pathlib import Path
 ROOT = Path(os.environ.get("TMM_ROOT", Path(__file__).resolve().parent))
 RAW = ROOT / "data" / "raw"            # downloaded source files (never edited)
 PROC = ROOT / "data" / "processed"     # analysis-ready matrices
-FROZEN = ROOT / "data" / "frozen"      # small files committed to git (locked signatures, gene panel)
-RESULTS = ROOT / "results"
-FIGURES = ROOT / "figures"
+
+
+def _output_path(env_name, default):
+    """Resolve a versionable output path, relative to ROOT unless explicitly absolute."""
+    value = os.environ.get(env_name)
+    path = Path(value) if value else ROOT / default
+    return path if path.is_absolute() else ROOT / path
+
+
+# Keep historical outputs immutable by setting, for example,
+# TMM_RESULTS_DIR=results_v3 and TMM_FROZEN_DIR=data/frozen_v3 for the corrected rerun.
+FROZEN = _output_path("TMM_FROZEN_DIR", "data/frozen")
+RESULTS = _output_path("TMM_RESULTS_DIR", "results")
+FIGURES = _output_path("TMM_FIGURES_DIR", "figures")
 for _p in (RAW, PROC, FROZEN, RESULTS, FIGURES):
     _p.mkdir(parents=True, exist_ok=True)
 
@@ -25,6 +36,7 @@ SEED = 42
 # ---------------------------------------------------------------------------
 XENA_TOIL = "https://toil.xenahubs.net"
 XENA_PANCAN = "https://pancanatlas.xenahubs.net"
+XENA_TCGA = "https://tcga.xenahubs.net"
 TOIL_EXPR = "tcga_RSEM_gene_tpm"                 # stored as log2(TPM + 0.001): do NOT log again
 PANCAN_SUBTYPES = "TCGASubtype.20170308.tsv"
 PANCAN_GENE_LIST_DS = "EB++AdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.xena"  # only used to list gene symbols
@@ -37,19 +49,31 @@ _PCAWG_OPS = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operat
 PCAWG_SAMPLE_SHEET = _PCAWG_OPS + "sample_sheet/pcawg_sample_sheet.2016-10-18.tsv"   # ICGC specimen -> TCGA UUIDs
 PCAWG_UUID2BARCODE = _PCAWG_OPS + "pc_annotation-tcga_uuid2barcode.tsv"            # TCGA UUID -> barcode
 XENA_PUBLIC = "https://ucscpublic.xenahubs.net"
-CCLE_EXPR = "ccle/CCLE_DepMap_18Q2_RNAseq_RPKM_20180502"      # log2(RPKM+1) per cell line
+CCLE_EXPR = "ccle/CCLE_DepMap_18Q2_RNAseq_RPKM_20180502"      # linear RPKM per cell line (log2-transformed once in data_build)
 _EXTEND = _NATURE + "s41467-020-20474-9/MediaObjects/41467_2020_20474_MOESM"
 EXTEND_SIGNATURE = _EXTEND + "4_ESM.xlsx"    # Supplementary Data 1: the 13-gene signature
 EXTEND_TCGA_SCORES = _EXTEND + "7_ESM.xlsx"  # Supplementary Data 4: published EXTEND score per TCGA sample
 EXTEND_SOURCE_FIG1 = _EXTEND + "11_ESM.xlsx" # Source data Fig. 1: cell-line telomerase assays
+# Large independent cell-line resource with qTRAP telomerase activity, C-circle ALT measurements and fixed
+# Cell Model Passports RNA-seq (Wu et al., Nature Communications 2025; 976 lines).
+WU2025_ASSAYS = (_NATURE +
+                 "s41467-025-67190-w/MediaObjects/41467_2025_67190_MOESM3_ESM.xlsx")
+CMP_RNASEQ = "https://cog.sanger.ac.uk/cmp/download/rnaseq_all_20220624.zip"
+CMP_RNASEQ_MEMBER = "rnaseq_tpm_20220624.csv"
 # Whole transcriptome: the Toil TPM matrix is downloaded once and reduced to protein-coding genes.
 TOIL_MATRIX = "https://toil-xena-hub.s3.us-east-1.amazonaws.com/download/tcga_RSEM_gene_tpm.gz"   # ~740 MB
 TOIL_PROBEMAP = "https://toil-xena-hub.s3.us-east-1.amazonaws.com/download/probeMap%2Fgencode.v23.annotation.gene.probemap"
 HGNC_COMPLETE = "https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt"
 # Clinical endpoints (TCGA Pan-Cancer Clinical Data Resource, Liu et al. 2018) and PCAWG expression
 PANCAN_SURVIVAL = "Survival_SupplementalTable_S1_20171025_xena_sp"
+PANCAN_STEMNESS = "StemnessScores_RNAexp_20170127.2.tsv"
+# Open-access PanCanAtlas ABSOLUTE purity/ploidy table distributed by the NCI GDC publication page.
+PANCAN_ABSOLUTE = "https://api.gdc.cancer.gov/data/4f277128-f793-4354-a13d-30cc7fe9f6b5"
 XENA_PCAWG = "https://pcawg.xenahubs.net"
 PCAWG_EXPR = "tophat_star_fpkm_uq.v2_aliquot_gl.sp.log"      # independent quantification of the same tumors
+# TCGA Pan-Cancer gene-level GISTIC2 copy number from whole-genome microarrays (Xena version 2016-08-16).
+# Xena fields are ``SYMBOL|ENSEMBL``; data_build.py maps them explicitly to the transcriptome's HGNC symbols.
+TCGA_GENE_CNV = "TCGA.PANCAN.sampleMap/Gistic2_CopyNumber_Gistic2_all_data_by_genes"
 
 # ---------------------------------------------------------------------------
 # Curated telomere-maintenance gene panel (HGNC symbols). Grouped by function.
@@ -102,7 +126,7 @@ REGION_EXCLUDE = {"tel_no5p15": "5p15", "tel_no5p": "5p"}
 N_FOLDS = 5
 N_REPEATS = 5
 N_BOOT = 1000
-N_RANDOM_SETS = 100
+N_RANDOM_SETS = 1000
 RANDOM_POOL_SIZE = 3000
 
 # ---------------------------------------------------------------------------
@@ -110,8 +134,11 @@ RANDOM_POOL_SIZE = 3000
 # ---------------------------------------------------------------------------
 SIG_K = 60                                   # headline size: the size of the curated panel
 SIG_K_GRID = [10, 20, 30, 60, 100, 200]      # size-performance curve
-SIG_C_GRID = [0.05, 0.15, 0.5]               # L1 strengths; chosen inside the first training fold
-SIG_STABLE = 0.8                             # a gene is "stable" if selected in >= 80% of folds
+SIG_C_GRID = [1e-5, 1e-4, 1e-3]              # SGD L1 alpha, tuned independently in each outer train set
+SIG_INNER_FOLDS = 3
+SIG_STABLE = 0.8                             # descriptive selection-frequency threshold
+SIG_STABILITY_SUBSAMPLES = 100               # dedicated stratified subsampling stability analysis
+SIG_STABILITY_FRACTION = 0.8
 
 # ---------------------------------------------------------------------------
 # Neural models
@@ -119,13 +146,27 @@ SIG_STABLE = 0.8                             # a gene is "stable" if selected in
 NN = dict(hidden=32, dropout=0.2, flat_hidden=128,
           lr=1e-3, weight_decay=1e-4, batch_size=128, max_epochs=300, patience=25, val_frac=0.15)
 
-# Random search over MLP hyperparameters on an inner validation split of the first training fold.
+# Random search is repeated independently inside each outer training set.  No selected configuration is
+# reused across outer folds or repeats.
 NN_SEARCH = dict(
     n_iter=8,
     space=dict(hidden=[16, 32, 64], flat_hidden=[64, 128, 256], dropout=[0.1, 0.2, 0.4],
                lr=[3e-4, 1e-3, 3e-3], weight_decay=[1e-5, 1e-4, 1e-3]),
 )
 
-# Equivalence margin for TOST on within-cancer AUROC: differences smaller than this are
-# treated as practically irrelevant when claiming that two models perform equivalently.
+# Prespecified equivalence margin for TOST on within-cancer AUROC.  A two-point AUROC difference was chosen
+# before the final comparisons as the largest loss that would not change the practical choice between a
+# compact assay and the full transcriptome; both the estimate and its 90% CI must lie inside this margin.
 EQUIV_MARGIN = 0.02
+
+# Karyotype/cis-signal controls.  ALT-prone gliomas differ strongly at 1p and 17p; the telomerase task can
+# reconstruct the TERT locus through 5p15 expression.  The confounding stage also performs gene-wise CNV
+# residualisation inside each outer training fold.
+CONFOUNDING_REGIONS = {"alt": ("1p", "17p"), "tel": ("5p15",)}
+CONFOUNDING_REGION_SETS = {
+    "alt": {
+        "1p/17p": ("1p", "17p"),
+        "ATRX/DAXX cytobands": ("Xq21", "6p21"),
+    },
+    "tel": {"5p15": ("5p15",)},
+}

@@ -1,0 +1,6 @@
+task,source,term,p_adj,intersection,term_size
+alt,REAC,Sensory Perception,0.002072263901941033,10,574
+alt,KEGG,Olfactory transduction,0.002251522908348788,8,427
+alt,REAC,Expression and translocation of olfactory receptors,0.002988810679326011,8,353
+alt,REAC,Olfactory Signaling Pathway,0.003447819827111906,8,360
+tel,KEGG,Olfactory transduction,0.02936297791927768,2,427

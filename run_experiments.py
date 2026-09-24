@@ -23,7 +23,7 @@ import torch
 
 import config as C
 import evaluate as E
-from models import ScoreModel, SkModel, TorchModel, sample_nn_params
+from models import ScoreModel, SkModel, TorchModel, TunedTorchModel
 
 TASK_INFO = {
     "alt":        ("clf", "ALT-like vs other, gliomas + sarcomas (TERT removed from inputs)"),
@@ -118,56 +118,41 @@ def excluded(task):
 # ---------------------------------------------------------------------------
 # Models per task
 # ---------------------------------------------------------------------------
-def model_specs(task, genes, sets, X, quick, tuned=None):
+def model_specs(task, genes, sets, X, quick, tune=True, tune_iters=None):
     kind = TASK_INFO[task][0]
     nn = {"max_epochs": 15, "patience": 5} if quick else None
     base = ["cancer"]
     specs = {
         "Cancer type only": (lambda s: SkModel("cov_only", kind, s, use_genes=False), genes, base),
         "LR (panel)": (lambda s: SkModel("lr", kind, s), genes, base),
+        "Elastic net (panel)": (lambda s: SkModel("elasticnet", kind, s), genes, base),
         "RF (panel)": (lambda s: SkModel("rf", kind, s), genes, base),
         "GBM (panel)": (lambda s: SkModel("gbm", kind, s), genes, base),
         "MLP (panel)": (lambda s: TorchModel("mlp", kind, seed=s, params=nn), genes, base),
     }
-    if tuned:
-        specs["MLP tuned (panel)"] = (lambda s: TorchModel("mlp", kind, seed=s, params=dict(tuned, **(nn or {}))),
-                                      genes, base)
+    if kind == "clf":
+        specs["Linear SVM (panel)"] = (lambda s: SkModel("svm", kind, s), genes, base)
+    if tune:
+        specs["MLP tuned (panel)"] = (
+            lambda s: TunedTorchModel(kind, seed=s, n_iter=tune_iters,
+                                      overrides=({"max_epochs": 15, "patience": 5} if quick else None)),
+            genes, base)
     if task == "alt":
         specs["Cancer + glioma subtype only"] = (lambda s: SkModel("cov_only", kind, s, use_genes=False), genes, ["subtype"])
         specs["LR (panel) + glioma subtype"] = (lambda s: SkModel("lr", kind, s), genes, ["subtype"])
     if task in ("alt_noATRX", "alt_pan", "alt_pheno") or task in C.REGION_EXCLUDE:
-        for k in ["RF (panel)", "MLP (panel)"]:
+        for k in ["RF (panel)", "MLP (panel)", "MLP tuned (panel)"]:
             specs.pop(k, None)
     if task == "tel":
         sig = [g for g in sets.get("signature", []) if g in X.columns and g != "TERT"]
         specs["Barthel 2017 score (published)"] = (lambda s: ScoreModel("sig_score"), ["sig_score"], base)
         specs["LR (Barthel 2017 genes)"] = (lambda s: SkModel("lr", kind, s), sig, base)
-        ext_genes = [g for g in sets.get("extend_signature", []) if g in X.columns and g not in ("TERT", "TERC")]
-        if ext_genes and "extend_score" in X.columns:
-            specs["EXTEND score (published; uses TERT/TERC)"] = (lambda s: ScoreModel("extend_score"), ["extend_score"], base)
-            specs["LR (EXTEND genes, TERT/TERC removed)"] = (lambda s: SkModel("lr", kind, s), ext_genes, base)
+        # The published EXTEND score is evaluated only against independent enzymatic activity.  On this
+        # TERT-expression-defined target it would be circular.  Retain TERC here: only TERT defines the label.
+        ext_genes = [g for g in sets.get("extend_signature", []) if g in X.columns and g != "TERT"]
+        if ext_genes:
+            specs["LR (EXTEND gene set, TERT removed)"] = (lambda s: SkModel("lr", kind, s), ext_genes, base)
     return specs
-
-
-def tune_mlp(X, cov, y, genes, kind, folds, args, seed=C.SEED):
-    """Random search on a held-out slice of the FIRST training fold only; test folds never inform selection."""
-    from sklearn.model_selection import train_test_split
-    rng = np.random.default_rng(seed)
-    tr_all = folds[0][2]
-    tr, va = train_test_split(tr_all, test_size=0.25, random_state=seed,
-                              stratify=y[tr_all] if kind == "clf" else None)
-    best, best_score = None, -np.inf
-    for i in range(args.tune_iters):
-        params = sample_nn_params(rng)
-        if args.quick:
-            params.update(max_epochs=10, patience=3)
-        m = Select(TorchModel("mlp", kind, seed=seed, params=params), genes, ["cancer"]).fit(X.iloc[tr], cov.iloc[tr], y[tr])
-        pred = m.predict(X.iloc[va], cov.iloc[va])
-        score = E.auc(y[va], pred) if kind == "clf" else -np.mean((y[va] - pred) ** 2)
-        if score > best_score:
-            best, best_score = params, score
-    print(f"    tuned MLP: {best} (validation score {best_score:.3f})", flush=True)
-    return best
 
 
 # ---------------------------------------------------------------------------
@@ -181,8 +166,8 @@ def run_task(task, lab, expr, sets, ext, args):
     print(f"\n=== {task}: {desc}\n    n={len(y)}" + (f", positives={int(y.sum())}" if kind == "clf" else "") +
           f", panel genes={len(genes)}, cancers={cov.cancer.nunique()}, excluded genes={len(excl)}", flush=True)
     folds = E.make_folds(y, cov.cancer, kind, args.folds, args.repeats)
-    tuned = tune_mlp(X, cov, y, genes, kind, folds, args) if (task in ("alt", "tel") and not args.no_tune) else None
-    specs = model_specs(task, genes, sets, X, args.quick, tuned)
+    specs = model_specs(task, genes, sets, X, args.quick,
+                        tune=(task in ("alt", "tel") and not args.no_tune), tune_iters=args.tune_iters)
     if args.models:
         specs = {k: v for k, v in specs.items() if k in args.models or k == "Cancer type only"}
 
@@ -210,25 +195,38 @@ def run_task(task, lab, expr, sets, ext, args):
     if task in TRANSCRIPTOME_TASKS and not args.no_transcriptome:
         transcriptome_model(task, d, cov, y, folds, excl, args)
     if task in ("alt", "tel") and args.random_sets:
-        random_null(task, d, cov, y, folds, genes, oof["LR (panel)"], excl, args)
+        random_null(task, d, X, cov, y, folds, genes, oof["LR (panel)"], excl, args)
 
 
 def transcriptome_model(task, d, cov, y, folds, excl, args):
-    """L2 logistic regression on every protein-coding gene (minus label-defining genes), same folds."""
+    """Strong linear baselines on every protein-coding gene, all using the same outer folds."""
     T, source = load_transcriptome(d["sample"].tolist())
     T = T.reset_index(drop=True)
     ok = T.notna().all().values & (T.std().values > 0)
     genes = [g for g, keep in zip(T.columns, ok) if keep and g not in excl]
-    t0 = time.time()
     kindm = "lr" if args.quick or len(genes) < 5000 else "lr_wide"
-    oof = E.run_cv(lambda s: Select(SkModel(kindm, "clf", s), genes, ["cancer"]), T, cov, y, folds)
-    m = E.metrics(y, np.nanmean(oof, 0), cov.cancer.values, E.eligible_cancers(y, cov.cancer.values, "clf"), "clf")
-    print(f"    {'LR (whole transcriptome)':44s} AUROC={m['AUROC']:.3f}  within_AUROC={m['within_AUROC']:.3f}  "
-          f"({time.time() - t0:.0f}s; {len(genes)} genes from {source})", flush=True)
-    np.savez_compressed(C.RESULTS / f"{task}_tw_oof.npz", oof=oof, n_genes=len(genes), source=source)
+    methods = [("LR (whole transcriptome)", kindm)]
+    # The full model suite is a primary-task comparison.  Secondary ablations retain the same
+    # transcriptome-wide LR on identical folds without multiplying several very expensive 19k-gene
+    # inner searches; panel elastic net/SVM remain in their task OOF files.
+    if task in ("alt", "tel"):
+        methods += [("Elastic net (whole transcriptome)", "elasticnet_wide"),
+                    ("Linear SVM (whole transcriptome)", "svm")]
+    saved = {}
+    for name, model_kind in methods:
+        t0 = time.time()
+        oof = E.run_cv(lambda s, mk=model_kind: Select(SkModel(mk, "clf", s), genes, ["cancer"]),
+                       T, cov, y, folds)
+        saved[name] = oof
+        m = E.metrics(y, np.nanmean(oof, 0), cov.cancer.values,
+                      E.eligible_cancers(y, cov.cancer.values, "clf"), "clf")
+        print(f"    {name:44s} AUROC={m['AUROC']:.3f}  within_AUROC={m['within_AUROC']:.3f}  "
+              f"({time.time() - t0:.0f}s; {len(genes)} genes from {source})", flush=True)
+    np.savez_compressed(C.RESULTS / f"{task}_tw_oof.npz", n_genes=len(genes), source=source,
+                        **{name.replace(" ", "_"): arr for name, arr in saved.items()})
 
 
-def random_null(task, d, cov, y, folds, genes, oof_panel, excl, args):
+def random_null(task, d, X, cov, y, folds, genes, oof_panel, excl, args):
     """Is the curated panel better than random gene sets of the same size (same model, same folds)?"""
     T, source = load_transcriptome(d["sample"].tolist())
     T = T.reset_index(drop=True)
@@ -243,10 +241,17 @@ def random_null(task, d, cov, y, folds, genes, oof_panel, excl, args):
         m = E.metrics(y, s, cov.cancer.values, cancers, "clf")
         return m["AUROC"], m["within_AUROC"]
 
-    rows = [("telomere panel", *score(oof_panel[0]))]
+    # A fixed, prespecified LR penalty is used for both the curated and random panels.  This avoids
+    # thousands of redundant inner searches while keeping the feature-set comparison exactly matched.
+    # The curated panel includes the noncoding telomerase RNA TERC, whereas the random pool is
+    # intentionally protein-coding.  Score the real panel from the already aligned panel matrix and
+    # random sets from the whole-transcriptome matrix; both use exactly the same LR and folds.
+    panel_fixed = E.run_cv(lambda s: Select(SkModel("lr_fixed", "clf", s), genes, ["cancer"]),
+                           X, cov, y, folds0)
+    rows = [("telomere panel", *score(panel_fixed[0]))]
     for i in range(args.random_sets):
         rg = rng.choice(pool, len(genes), replace=False).tolist()
-        o = E.run_cv(lambda s: Select(SkModel("lr", "clf", s), rg, ["cancer"]), T, cov, y, folds0)
+        o = E.run_cv(lambda s: Select(SkModel("lr_fixed", "clf", s), rg, ["cancer"]), T, cov, y, folds0)
         rows.append((f"random_{i}", *score(o[0])))
     res = pd.DataFrame(rows, columns=["gene_set", "AUROC", "within_AUROC"])
     res.to_csv(C.RESULTS / f"{task}_random_null.csv", index=False)
@@ -270,8 +275,10 @@ def main():
     args.tune_iters = 2 if args.quick else C.NN_SEARCH["n_iter"]
 
     lab, expr, sets, ext = load()
-    info = {"torch": torch.__version__, "python": platform.python_version(), "args": vars(args),
-            "started": time.strftime("%Y-%m-%d %H:%M:%S")}
+    import sklearn
+    info = {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__,
+            "scikit-learn": sklearn.__version__, "torch": torch.__version__, "machine": platform.machine(),
+            "cpus": __import__("os").cpu_count(), "args": vars(args), "started": time.strftime("%Y-%m-%d %H:%M:%S")}
     print(json.dumps(info), flush=True)
     t0 = time.time()
     for t in args.tasks.split(","):

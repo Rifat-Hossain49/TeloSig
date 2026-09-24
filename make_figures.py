@@ -9,6 +9,7 @@ import json
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
@@ -67,6 +68,50 @@ def dot_ci(ax, rows, key="within_AUROC", chance=0.5):
 # ---------------------------------------------------------------------------
 # Main figures
 # ---------------------------------------------------------------------------
+def fig_study_design():
+    """Compact visual summary of the leakage controls and validation hierarchy."""
+    fig, ax = plt.subplots(figsize=(12.0, 4.2))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    def box(x, y, w, h, title, body, color=BLUE):
+        patch = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.012,rounding_size=0.018",
+                               facecolor="white", edgecolor=color, linewidth=1.4)
+        ax.add_patch(patch)
+        ax.text(x + 0.014, y + h - 0.050, title, color=color, fontsize=7.0, weight="bold", va="top")
+        ax.text(x + 0.014, y + h - 0.125, body, color=INK2, fontsize=6.3, va="top", linespacing=1.35)
+
+    def arrow(x1, y1, x2, y2):
+        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=11,
+                                     color=AXIS, linewidth=1.1))
+
+    top_y, w, h = 0.58, 0.175, 0.29
+    stages = [
+        (0.02, "Cohorts and labels", "TCGA RNA-seq\nALT genotype proxy\nTERT-expression proxy"),
+        (0.22, "Leakage safeguards", "Remove defining genes\nHold out PCAWG donors\nTraining-only scaling"),
+        (0.42, "Repeated nested CV", "5 folds x 5 repeats\nInner tuning and selection\nMatched model folds"),
+        (0.62, "Confounder controls", "Within-cancer AUROC\nSubtype and arm controls\nCNV residualization"),
+        (0.82, "Locked deployment", "60-gene coefficients\nTCGA means and SDs\nTraining-derived threshold"),
+    ]
+    for x, title, body in stages:
+        box(x, top_y, w, h, title, body, ORANGE if title == "Confounder controls" else BLUE)
+    for x in (0.195, 0.395, 0.595, 0.795):
+        arrow(x, top_y + h / 2, x + 0.025, top_y + h / 2)
+
+    ax.text(0.02, 0.47, "Validation hierarchy", fontsize=8.5, color=INK, weight="bold")
+    validation = [
+        (0.02, "Held-out assay labels", "PCAWG WGS evidence\nin overlapping TCGA donors", ORANGE),
+        (0.35, "Independent direct assays", "Wu 2025 qTRAP, C-circles\nand categorical TMM", AQUA),
+        (0.68, "Technical and clinical context", "Independent RNA quantification\nand cross-validated survival", BLUE),
+    ]
+    for x, title, body, color in validation:
+        box(x, 0.09, 0.29, 0.27, title, body, color)
+    ax.text(0.5, 0.965, "Confounder-aware transcriptomic TMM benchmark", ha="center", va="top",
+            fontsize=10, color=INK, weight="bold")
+    save(fig, "fig1_study_design")
+
+
 def fig_feature_sets():
     """Which gene set carries the signal? References and published methods vs curated panel, compact
     signature and the whole transcriptome (within-cancer AUROC, 95% CI)."""
@@ -79,7 +124,7 @@ def fig_feature_sets():
         rows = []
         for m, lab in [("Cancer + glioma subtype only", "Cancer type + glioma subtype"),
                        ("Barthel 2017 score (published)", "Barthel 2017 score (43 genes)"),
-                       ("LR (EXTEND genes, TERT/TERC removed)", "EXTEND genes, TERT/TERC removed")]:
+                       ("LR (EXTEND gene set, TERT removed)", "EXTEND gene set, TERT removed")]:
             if m in s.index:
                 rows.append((lab, s.loc[m], GRAY))
         panel = [m for m in s.index if m.endswith("(panel)")]
@@ -163,6 +208,8 @@ def fig_validation():
     if ext is not None:
         ax = axes.pop(0)
         e = ext[ext.task == "alt"]
+        if "scope" in e:
+            e = e[e.scope.fillna("all") == "all"]
         colors = {"Cancer type only": GRAY, "Barthel genotype label": GRAY, "LR (panel)": BLUE, "GBM (panel)": BLUE}
         rows = [(r.model, r.rename({"AUROC": "k", "AUROC_lo": "k_lo", "AUROC_hi": "k_hi"}),
                  ORANGE if r.model.startswith("Signature") else colors.get(r.model, BLUE)) for _, r in e.iterrows()]
@@ -188,25 +235,36 @@ def fig_validation():
 
 
 def fig_cell_lines():
-    r = csv("validation_celllines.csv")
-    if r is None:
+    legacy = csv("validation_celllines.csv")
+    wu = csv("validation_wu2025_celllines.csv")
+    groups = []
+    if wu is not None and not wu.empty:
+        q = wu[(wu.task == "tel") & (wu.metric == "Spearman") & (wu.scope == "all")].copy()
+        if not q.empty:
+            q = q.rename(columns={"estimate": "spearman"})
+            groups.append(("Wu 2025 qTRAP", q[["model", "n", "spearman", "lo", "hi"]], BLUE))
+    if legacy is not None and not legacy.empty:
+        for panel, q in legacy.groupby("panel"):
+            groups.append((str(panel), q[["model", "n", "spearman", "lo", "hi"]], ORANGE))
+    if not groups:
         return
-    order = r.groupby("model").spearman.mean().sort_values().index.tolist()
-    panels = sorted(r.panel.unique())
-    fig, ax = plt.subplots(figsize=(5.0, 0.42 * len(order) + 1.0))
-    h = 0.8 / len(panels)
-    for i, (panel, color) in enumerate(zip(panels, [BLUE, ORANGE, AQUA])):
-        sub = r[r.panel == panel].set_index("model").reindex(order)
-        pos = np.arange(len(order)) + (i - (len(panels) - 1) / 2) * h
-        ax.barh(pos, sub.spearman.values, height=h * 0.9, color=color, label=f"{panel} (n={int(sub['n'].dropna().iloc[0])})")
-        ax.errorbar(sub.spearman.values, pos, xerr=[sub.spearman - sub.lo, sub.hi - sub.spearman],
-                    fmt="none", ecolor=INK2, elinewidth=0.7, capsize=1.5)
-    ax.axvline(0, color=AXIS, lw=1)
-    ax.set_yticks(np.arange(len(order)), order)
-    ax.set_xlabel("Spearman ρ with measured telomerase activity (95% CI)")
-    ax.set_title("Cancer cell lines with enzymatic telomerase assays", fontsize=8.5, color=INK, loc="left")
-    ax.legend(loc="lower right", fontsize=7)
-    ax.grid(axis="y", visible=False)
+    heights = [max(1.3, 0.34 * len(q) + 0.7) for _, q, _ in groups]
+    fig, axes = plt.subplots(len(groups), 1, figsize=(5.2, sum(heights)),
+                             gridspec_kw={"height_ratios": heights}, squeeze=False)
+    for ax, (label, sub, color) in zip(axes[:, 0], groups):
+        sub = sub.sort_values("spearman").reset_index(drop=True)
+        pos = np.arange(len(sub))
+        ax.errorbar(sub.spearman, pos, xerr=[sub.spearman - sub.lo, sub.hi - sub.spearman],
+                    fmt="o", ms=4.5, color=color, ecolor=INK2, elinewidth=0.8, capsize=1.8)
+        ax.axvline(0, color=AXIS, lw=1)
+        ax.set_yticks(pos, sub.model)
+        ax.set_xlim(-1, 1)
+        ax.set_title(f"{label} (up to n={int(sub['n'].max())})", fontsize=8, color=INK, loc="left")
+        ax.grid(axis="y", visible=False)
+    axes[-1, 0].set_xlabel("Spearman rho (95% CI)")
+    fig.suptitle("Independent enzymatic telomerase-activity validation", fontsize=8.5,
+                 color=INK, x=0.02, ha="left")
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
     save(fig, "fig6_cell_lines")
 
 
@@ -215,15 +273,18 @@ def fig_survival():
     if s is None or s.empty:
         return
     s = s[s.adjustment != "unadjusted"].copy()
+    if "analysis_role" in s:
+        s = s[s.analysis_role == "primary"]
     s["label"] = s.task.map({"alt": "ALT score", "tel": "Telomerase score"}) + " · " + s.group + " · " + \
         s.endpoint + " · " + s.adjustment
     fig, ax = plt.subplots(figsize=(5.2, 0.3 * len(s) + 1.0))
     y = np.arange(len(s))[::-1]
     for yi, (_, r) in zip(y, s.iterrows()):
-        c = ORANGE if r.p < 0.05 else GRAY
+        q = r.get("p_fdr", r.p)
+        c = ORANGE if q < 0.05 else GRAY
         ax.plot([r.HR_lo, r.HR_hi], [yi, yi], color=c, lw=2, solid_capstyle="round")
         ax.plot(r.HR_per_SD, yi, "s", ms=5, color=c, mec="white", mew=1)
-        ax.annotate(f"{r.HR_per_SD:.2f} (p={r.p:.3f}, {int(r.events)} events)", (r.HR_hi, yi), xytext=(6, 0),
+        ax.annotate(f"{r.HR_per_SD:.2f} (FDR={q:.3f}, {int(r.events)} events)", (r.HR_hi, yi), xytext=(6, 0),
                     textcoords="offset points", va="center", fontsize=6.5, color=INK2)
     ax.axvline(1, color=AXIS, lw=1)
     ax.set_xscale("log")
@@ -231,7 +292,7 @@ def fig_survival():
     ax.set_xticks(ticks, [f"{t:g}" for t in ticks])
     ax.minorticks_off()
     ax.set_yticks(y, s.label)
-    ax.set_xlabel("Hazard ratio per SD of cross-validated score (95% CI); orange: p < 0.05")
+    ax.set_xlabel("Hazard ratio per SD of cross-validated score (95% CI); orange: FDR < 0.05")
     ax.set_title("Association with outcome within cancer types", fontsize=8.5, color=INK, loc="left")
     ax.grid(axis="y", visible=False)
     save(fig, "fig7_survival")
@@ -309,17 +370,41 @@ def figS_stability(top=30):
     for ax, t in zip(axes[0], tasks):
         g = csv(f"{t}_signature_genes.csv").head(top).iloc[::-1]
         colors = [ORANGE if p else BLUE for p in g.in_telomere_panel]
-        ax.barh(np.arange(len(g)), g.selection_frequency, color=colors, height=0.72)
+        key = "subsample_selection_frequency" if "subsample_selection_frequency" in g else "selection_frequency"
+        ax.barh(np.arange(len(g)), g[key], color=colors, height=0.72)
         ax.axvline(C.SIG_STABLE, color=AXIS, lw=1)
         ax.set_yticks(np.arange(len(g)), g.gene, fontsize=6.5)
         ax.set_xlim(0, 1.05)
-        ax.set_xlabel("Fraction of training folds selecting the gene")
+        ax.set_xlabel("Selection frequency in dedicated stratified subsamples")
         info = json.load(open(C.RESULTS / f"{t}_signature.json"))
         ax.set_title(f"{TITLE[t]}\nmean Jaccard between folds {info['mean_jaccard_between_folds']:.2f}; "
                      f"orange: telomere-panel gene", fontsize=7.5, color=INK, loc="left")
         ax.grid(axis="y", visible=False)
     fig.tight_layout()
     save(fig, "figS4_signature_stability")
+
+
+def fig_karyotype_controls():
+    tasks = [t for t in ("alt", "tel") if (C.RESULTS / f"{t}_confounding_summary.csv").exists()]
+    if not tasks:
+        return
+    fig, axes = plt.subplots(1, len(tasks), figsize=(4.6 * len(tasks), 3.5), squeeze=False)
+    for ax, task in zip(axes[0], tasks):
+        s = pd.read_csv(C.RESULTS / f"{task}_confounding_summary.csv").set_index("model")
+        order = ["Cancer type only", "Cancer + molecular subtype only", "CNV only",
+                 "CNV only, label loci excluded", "Expression only"]
+        order += [m for m in s.index if m.startswith("Expression excluding")]
+        order += ["Expression residualized for CNV", "Expression + CNV"]
+        colors = {"Cancer type only": GRAY, "Cancer + molecular subtype only": GRAY,
+                  "CNV only": BLUE, "CNV only, label loci excluded": BLUE,
+                  "Expression only": ORANGE, "Expression residualized for CNV": ORANGE,
+                  "Expression + CNV": AQUA}
+        rows = [(m, s.loc[m], colors.get(m, ORANGE)) for m in order if m in s.index]
+        dot_ci(ax, rows)
+        ax.set_xlabel("Within-cancer AUROC (95% CI)")
+        ax.set_title(TITLE[task], fontsize=8.5, color=INK, loc="left")
+    fig.tight_layout()
+    save(fig, "fig8_karyotype_controls")
 
 
 def figS_enrichment(top=10):
@@ -339,14 +424,40 @@ def figS_enrichment(top=10):
     save(fig, "figS5_enrichment")
 
 
+def figS_wu2025_alt():
+    r = csv("validation_wu2025_celllines.csv")
+    if r is None or r.empty:
+        return
+    r = r[(r.task == "alt") & (r.scope == "all")]
+    panels = [("AUROC", "Unambiguous ALT/ALT-Low versus TEL", 0, 1),
+              ("Spearman", "Correlation with C-circle abundance", -1, 1)]
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 2.5))
+    for ax, (metric, title, xmin, xmax) in zip(axes, panels):
+        q = r[r.metric == metric].sort_values("estimate").reset_index(drop=True)
+        y = np.arange(len(q))
+        ax.errorbar(q.estimate, y, xerr=[q.estimate - q.lo, q.hi - q.estimate], fmt="o", ms=5,
+                    color=ORANGE, ecolor=INK2, elinewidth=0.8, capsize=2)
+        ax.axvline(0.5 if metric == "AUROC" else 0, color=AXIS, lw=1)
+        ax.set_xlim(xmin, xmax)
+        ax.set_yticks(y, q.model)
+        ax.set_xlabel(f"{metric} (95% CI)")
+        ax.set_title(title, fontsize=8, color=INK, loc="left")
+        ax.grid(axis="y", visible=False)
+    fig.suptitle("Locked ALT signatures in the Wu 2025 direct-assay atlas", fontsize=8.5,
+                 color=INK, x=0.02, ha="left")
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    save(fig, "figS6_wu2025_alt")
+
+
 # ---------------------------------------------------------------------------
 # Tables
 # ---------------------------------------------------------------------------
 def latex_tables():
     lines = []
     key_models = ["Cancer + glioma subtype only", "Barthel 2017 score (published)", "LR (Barthel 2017 genes)",
-                  "EXTEND score (published; uses TERT/TERC)", "LR (EXTEND genes, TERT/TERC removed)",
-                  "LR (panel)", "RF (panel)", "GBM (panel)", "MLP tuned (panel)", SIG, TW]
+                  "LR (EXTEND gene set, TERT removed)", "LR (panel)", "Elastic net (panel)",
+                  "Linear SVM (panel)", "RF (panel)", "GBM (panel)", "MLP tuned (panel)", SIG, TW,
+                  "Elastic net (whole transcriptome)", "Linear SVM (whole transcriptome)"]
     for t in TITLE:
         s = summary(t)
         if s is None:
@@ -354,8 +465,16 @@ def latex_tables():
         clf = "within_AUROC" in s.columns
         keys = ["within_AUROC", "AUROC", "AUPRC"] if clf else ["within_Spearman", "Spearman", "R2"]
         head = ["Within-cancer AUROC", "Pooled AUROC", "AUPRC"] if clf else ["Within-cancer $\\rho$", "Pooled $\\rho$", "$R^2$"]
-        lines += [f"% ---- {t}: {TITLE[t]} (n={int(s.n.iloc[0])})", "\\begin{tabular}{@{}lccc@{}}", "\\toprule",
-                  "Model & " + " & ".join(head) + " \\\\", "\\midrule"]
+        visible_title = f"{TITLE[t]} ($n={int(s.n.iloc[0])}$)"
+        header = "Model & " + " & ".join(head) + " \\\\"
+        lines += [f"% ---- {t}: {TITLE[t]} (n={int(s.n.iloc[0])})",
+                  "\\begin{longtable}{@{}p{0.36\\textwidth}p{0.17\\textwidth}p{0.17\\textwidth}p{0.17\\textwidth}@{}}",
+                  f"\\multicolumn{{4}}{{@{{}}l}}{{\\textbf{{{visible_title}}}}} \\\\", "\\toprule",
+                  header, "\\midrule", "\\endfirsthead",
+                  f"\\multicolumn{{4}}{{@{{}}l}}{{\\textbf{{{visible_title} (continued)}}}} \\\\", "\\toprule",
+                  header, "\\midrule", "\\endhead",
+                  "\\midrule \\multicolumn{4}{r@{}}{Continued on next page} \\\\", "\\endfoot",
+                  "\\botrule", "\\endlastfoot"]
         order = [m for m in key_models if m in s.index] + [m for m in s.index if m not in key_models]
         for m in order:
             r = s.loc[m]
@@ -366,26 +485,36 @@ def latex_tables():
                 else:
                     cells.append(f"{r[k]:.3f} [{r[k + '_lo']:.3f}, {r[k + '_hi']:.3f}]")
             lines.append(f"{m} & " + " & ".join(cells) + " \\\\")
-        lines += ["\\botrule", "\\end{tabular}", ""]
+        lines += ["\\end{longtable}", ""]
     pairs = [csv(f"{t}_pairs.csv") for t in TITLE]
     pairs = [p for p in pairs if p is not None and not p.empty]
     if pairs:
         pr = pd.concat(pairs)
         pr = pr[pr.metric.isin(["within_AUROC", "within_Spearman"])]
         lines += ["% ---- paired comparisons (within-cancer; paired bootstrap; TOST margin "
-                  f"{C.EQUIV_MARGIN})", "\\begin{tabular}{@{}llccc@{}}", "\\toprule",
-                  "Task & Comparison & $\\Delta$ [95\\% CI] & $p$ & Equivalent \\\\", "\\midrule"]
+                  f"{C.EQUIV_MARGIN})",
+                  "\\begin{longtable}{@{}p{0.17\\textwidth}p{0.34\\textwidth}p{0.17\\textwidth}p{0.07\\textwidth}p{0.08\\textwidth}@{}}",
+                  "\\multicolumn{5}{@{}l}{\\textbf{Paired comparisons (within-cancer)}} \\\\", "\\toprule",
+                  "Task & Comparison & $\\Delta$ [95\\% CI] & $p$ & Equivalent \\\\", "\\midrule", "\\endfirsthead",
+                  "\\multicolumn{5}{@{}l}{\\textbf{Paired comparisons (within-cancer; continued)}} \\\\", "\\toprule",
+                  "Task & Comparison & $\\Delta$ [95\\% CI] & $p$ & Equivalent \\\\", "\\midrule", "\\endhead",
+                  "\\midrule \\multicolumn{5}{r@{}}{Continued on next page} \\\\", "\\endfoot",
+                  "\\botrule", "\\endlastfoot"]
         for _, r in pr.iterrows():
             p = "$<$0.001" if r.p < 0.001 else f"{r.p:.3f}"
             eq = "yes" if str(r.get("equivalent", "")) == "True" else "no"
             lines.append(f"{TITLE.get(r.task, r.task)} & {r.model_a} vs {r.model_b} & "
                          f"{r['diff']:+.3f} [{r.lo:+.3f}, {r.hi:+.3f}] & {p} & {eq} \\\\")
-        lines += ["\\botrule", "\\end{tabular}", ""]
+        lines += ["\\end{longtable}", ""]
     text = "\n".join(lines).replace("_", "\\_").replace("\\\\_", "\\_").replace("%\\_", "%_")
     (C.RESULTS / "tables.tex").write_text(text, encoding="utf-8")
 
 
 def main():
+    # Write the compact numerical table before opening the Matplotlib backends.  On Windows, some PDF-indexing
+    # services briefly lock nearby text files after a batch of figure writes.
+    latex_tables()
+    fig_study_design()
     fig_feature_sets()
     fig_signature_curve()
     fig_subtype_control()
@@ -397,7 +526,8 @@ def main():
     figS_random_null()
     figS_stability()
     figS_enrichment()
-    latex_tables()
+    figS_wu2025_alt()
+    fig_karyotype_controls()
     print("figures ->", C.FIGURES, "| tables ->", C.RESULTS / "tables.tex")
 
 

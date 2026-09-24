@@ -12,6 +12,7 @@ import io
 import json
 import time
 import warnings
+import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
@@ -271,8 +272,8 @@ def main():
 def extend_resources(samples):
     """Published EXTEND telomerase scores per TCGA sample and the 13-gene signature.
 
-    Note: the signature contains TERT and TERC, so the score cannot be compared fairly with a
-    label defined by TERT expression; we therefore also evaluate the signature without them.
+    Note: the signature contains TERT, so the published score cannot be compared fairly with a label
+    defined by TERT expression.  The TCGA gene-set baseline removes TERT only and retains TERC.
     """
     sig = pd.read_excel(download(C.EXTEND_SIGNATURE, C.RAW / "extend_signature.xlsx"), header=2)
     genes = sig["Gene"].dropna().astype(str).str.strip().tolist()[:13]
@@ -338,11 +339,12 @@ def main_extra():
 # Clinical endpoints and whole-transcriptome matrices
 # ---------------------------------------------------------------------------
 SURVIVAL_FIELDS = ["OS", "OS.time", "PFI", "PFI.time", "DSS", "DSS.time",
-                   "age_at_initial_pathologic_diagnosis", "gender", "histological_grade"]
+                   "age_at_initial_pathologic_diagnosis", "gender", "histological_grade",
+                   "ajcc_pathologic_tumor_stage", "clinical_stage"]
 
 
 def survival_table(samples):
-    """Curated endpoints of the TCGA Pan-Cancer Clinical Data Resource (Liu et al. 2018)."""
+    """Curated PanCanAtlas endpoints, RNA stemness and ABSOLUTE tumor purity."""
     vals = xena.dataset_fetch(C.XENA_PANCAN, C.PANCAN_SURVIVAL, samples, SURVIVAL_FIELDS)
     codes = {c["name"]: (c["code"].split("\t") if c.get("code") else None)
              for c in xena.field_codes(C.XENA_PANCAN, C.PANCAN_SURVIVAL, SURVIVAL_FIELDS)}
@@ -353,6 +355,17 @@ def survival_table(samples):
                   (np.nan if v in ("NaN", None) else v) for v in col]
     for f in ["OS", "OS.time", "PFI", "PFI.time", "DSS", "DSS.time", "age_at_initial_pathologic_diagnosis"]:
         out[f] = pd.to_numeric(out[f], errors="coerce")
+    # Published PanCanAtlas RNA stemness score: a sensitivity covariate for the possibility that the
+    # telomerase signature is measuring a generic proliferation/stemness program.
+    out["RNAss"] = pd.to_numeric(
+        pd.Series(xena.dataset_fetch(C.XENA_PANCAN, C.PANCAN_STEMNESS, samples, ["RNAss"])[0], index=samples),
+        errors="coerce")
+    purity_path = download(C.PANCAN_ABSOLUTE, C.RAW / "TCGA_mastercalls.abs_tables_JSedit.fixed.txt")
+    purity = pd.read_csv(purity_path, sep="\t", usecols=["array", "call status", "purity"])
+    purity = purity[purity["call status"].astype(str).str.lower().eq("called")]
+    purity["purity"] = pd.to_numeric(purity["purity"], errors="coerce")
+    purity = purity.dropna(subset=["array", "purity"]).drop_duplicates("array").set_index("array")["purity"]
+    out["purity"] = purity.reindex(samples)
     out.index.name = "sample"
     out.to_csv(C.PROC / "survival.csv")
     return out
@@ -433,10 +446,150 @@ def ccle_transcriptome(cell_lines):
     print(f"  CCLE transcriptome: {expr.shape[0]} cell lines x {expr.shape[1]} protein-coding genes")
 
 
+def _normalise_cell_line_name(value):
+    """Conservative name normalisation for matching the assay table to the fixed CMP matrix header."""
+    return "".join(ch for ch in str(value).upper() if ch.isalnum())
+
+
+def wu2025_resources():
+    """Prepare the 976-line qTRAP/C-circle validation resource without fitting any model.
+
+    Only genes needed by the locked signatures and prespecified comparators are retained from the ~900 MB fixed
+    Cell Model Passports archive. The matrix is linear TPM and is converted to the TCGA model's
+    log2(TPM + 0.001) input scale; no cohort-wise standardisation is performed.
+    """
+    assay_path = download(C.WU2025_ASSAYS, C.RAW / "wu2025_suppdata2.xlsx")
+    assay = pd.read_excel(assay_path, sheet_name="Table S2")
+    required = {"Cell_Line_Name", "TMM", "C-Circle_%DOS16", "Telomerase_Activity_%MCF7"}
+    if not required <= set(assay.columns):
+        raise ValueError(f"Wu 2025 assay schema changed; missing {sorted(required - set(assay.columns))}")
+
+    required_locks = [C.FROZEN / f"{task}_signature_locked.json" for task in ("alt", "alt_pan", "tel")]
+    missing_locks = [p.name for p in required_locks if not p.exists()]
+    if missing_locks:
+        raise FileNotFoundError("build Wu 2025 expression after the locked signatures; missing " +
+                                ", ".join(missing_locks))
+
+    genes = set(C.PANEL_GENES) | {"TERT", "TERC"}
+    sets_path = C.PROC / "gene_sets.json"
+    if sets_path.exists():
+        for values in json.load(open(sets_path)).values():
+            if isinstance(values, list):
+                genes.update(values)
+    for path in C.FROZEN.glob("*_signature_locked*.json"):
+        genes.update(json.load(open(path)).get("genes", []))
+
+    archive = download(C.CMP_RNASEQ, C.RAW / "rnaseq_all_20220624.zip", timeout=3600)
+    selected, id_to_name = [], None
+    with zipfile.ZipFile(archive) as zf:
+        members = [n for n in zf.namelist() if n.endswith(C.CMP_RNASEQ_MEMBER)]
+        if len(members) != 1:
+            raise ValueError(f"expected one {C.CMP_RNASEQ_MEMBER} in archive; found {members}")
+        with zf.open(members[0]) as handle:
+            for chunk_number, chunk in enumerate(pd.read_csv(handle, chunksize=2000, low_memory=False)):
+                gene_col = chunk.columns[1]
+                if chunk_number == 0:
+                    id_to_name = dict(zip(chunk.columns[2:], chunk.iloc[0, 2:].astype(str)))
+                    chunk = chunk.iloc[4:]
+                keep = chunk[gene_col].astype(str).isin(genes)
+                if keep.any():
+                    selected.append(chunk.loc[keep].drop(columns=[chunk.columns[0]]).set_index(gene_col))
+    if not selected or id_to_name is None:
+        raise ValueError("no requested genes found in fixed Cell Model Passports matrix")
+    matrix = pd.concat(selected)
+    matrix = matrix.apply(pd.to_numeric, errors="coerce").groupby(level=0).mean().T
+    matrix.index.name = "model_id"
+
+    by_name = {}
+    for model_id, name in id_to_name.items():
+        by_name.setdefault(_normalise_cell_line_name(name), []).append(model_id)
+    assay["model_id"] = [by_name.get(_normalise_cell_line_name(name), [None])[0]
+                         if len(by_name.get(_normalise_cell_line_name(name), [])) == 1 else None
+                         for name in assay["Cell_Line_Name"]]
+    assay = assay[assay.model_id.isin(matrix.index)].drop_duplicates("model_id").copy()
+    matrix = matrix.loc[assay.model_id]
+    matrix.index = assay.model_id.values
+    matrix = np.log2(matrix.clip(lower=0).astype(float) + 1e-3)
+    matrix.to_csv(C.PROC / "wu2025_expr.csv.gz")
+    assay.to_csv(C.PROC / "wu2025_assay.csv", index=False)
+    print(f"  Wu 2025: matched {len(assay)}/976 assay lines; retained {matrix.shape[1]} genes")
+    return assay, matrix
+
+
+# ---------------------------------------------------------------------------
+# Gene-level copy number for karyotype-confounding controls
+# ---------------------------------------------------------------------------
+def _fetch_cnv_chunk(gene_to_field, samples, retries=4):
+    genes, fields = list(gene_to_field), list(gene_to_field.values())
+    for attempt in range(retries):
+        try:
+            _, values = xena.dataset_probe_values(C.XENA_TCGA, C.TCGA_GENE_CNV, samples, fields)
+            return {g: np.asarray(v, dtype=np.float32) if v is not None else np.full(len(samples), np.nan,
+                                                                                     dtype=np.float32)
+                    for g, v in zip(genes, values)}
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(5 * (attempt + 1))
+
+
+def main_cnv(workers=8, gene_chunk=25):
+    """Fetch legacy-TCGA SNP6 gene-level CNV values matched to the expression cohort.
+
+    Xena's legacy gene-level matrix is queried by field rather than downloaded as a monolithic file.  The
+    output is samples x genes and uses the same symbols/order as the protein-coding transcriptome where
+    possible.
+    """
+    lab = pd.read_csv(C.PROC / "labels.csv")
+    available_samples = set(xena.dataset_samples(C.XENA_TCGA, C.TCGA_GENE_CNV, None))
+    samples = [s for s in lab["sample"].tolist() if s in available_samples]
+    available_fields = xena.dataset_field(C.XENA_TCGA, C.TCGA_GENE_CNV)
+    fields_by_symbol = {}
+    for field in available_fields:
+        fields_by_symbol.setdefault(str(field).split("|", 1)[0], []).append(field)
+    if (C.PROC / "transcriptome_genes.txt").exists():
+        candidates = (C.PROC / "transcriptome_genes.txt").read_text().splitlines()
+    else:
+        candidates = sorted(set(protein_coding_map().values()))
+    # Preserve transcriptome order while preventing aliases from creating duplicate columns.
+    gene_to_field = {}
+    for gene in dict.fromkeys(candidates):
+        symbols = [gene] + C.GENE_ALIASES.get(gene, [])
+        matches = [field for symbol in symbols for field in fields_by_symbol.get(symbol, [])]
+        if matches:
+            gene_to_field[gene] = sorted(matches)[0]
+    genes = list(gene_to_field)
+    chunks = [genes[i:i + gene_chunk] for i in range(0, len(genes), gene_chunk)]
+    columns, done = {}, 0
+    print(f"  CNV: {len(samples)} matched tumors, {len(genes)} protein-coding genes, {len(chunks)} requests")
+    with ThreadPoolExecutor(workers) as ex:
+        futures = {ex.submit(_fetch_cnv_chunk, {g: gene_to_field[g] for g in ch}, samples): ch for ch in chunks}
+        for fut in as_completed(futures):
+            columns.update(fut.result())
+            done += 1
+            if done % 50 == 0:
+                print(f"  CNV requests: {done}/{len(chunks)}", flush=True)
+    matrix = pd.DataFrame(columns, index=samples).reindex(columns=genes)
+    save_matrix(matrix, "cnv")
+    print(f"  CNV missing fraction: {matrix.isna().mean().mean():.4f}")
+
+
+def main_clinical():
+    """Refresh stage, grade, outcome and RNA-stemness fields without rebuilding expression data."""
+    lab = pd.read_csv(C.PROC / "labels.csv")
+    survival_table(lab["sample"].tolist())
+
+
 if __name__ == "__main__":
     import sys
     if "--extra" in sys.argv:
         main_extra()
+    elif "--clinical" in sys.argv:
+        main_clinical()
+    elif "--wu2025" in sys.argv:
+        wu2025_resources()
+    elif "--cnv" in sys.argv:
+        main_cnv()
     elif "--transcriptome-tcga" in sys.argv:
         main_transcriptome(pcawg=False)
     elif "--transcriptome" in sys.argv:

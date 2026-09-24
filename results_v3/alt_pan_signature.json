@@ -1,0 +1,176 @@
+{
+ "task": "alt_pan",
+ "candidates": 19079,
+ "source": "protein-coding transcriptome",
+ "outer_fold_l1_sgd_alpha": [
+  0.0001,
+  1e-05,
+  0.001,
+  0.001,
+  1e-05,
+  0.001,
+  0.0001,
+  0.0001,
+  0.001,
+  1e-05,
+  0.0001,
+  0.0001,
+  0.0001,
+  0.0001,
+  1e-05,
+  1e-05,
+  0.001,
+  0.0001,
+  0.0001,
+  1e-05,
+  1e-05,
+  1e-05,
+  1e-05,
+  0.001,
+  1e-05
+ ],
+ "locked_l1_sgd_alpha": 0.001,
+ "k": 60,
+ "n_folds": 25,
+ "mean_jaccard_between_folds": 0.05339876222726725,
+ "stability_method": "100 stratified 80% subsamples",
+ "stable_genes": [
+  "DRG2"
+ ],
+ "locked_genes": [
+  "MAGEB6B",
+  "OR5B3",
+  "OR8K5",
+  "OR4A16",
+  "DRG2",
+  "HMGB4",
+  "OR6X1",
+  "SCP2D1",
+  "FGF6",
+  "ESX1",
+  "ACOT9",
+  "KRTAP8-1",
+  "SPINT4",
+  "OR8I2",
+  "DEFB119",
+  "OR4E2",
+  "DEFB124",
+  "TAAR5",
+  "GK2",
+  "CRYGD",
+  "MS4A12",
+  "USP17L3",
+  "EXOC1L",
+  "CCL27",
+  "DUSP23",
+  "PDHA1",
+  "REM1",
+  "SMS",
+  "OR5I1",
+  "HDAC7",
+  "ADAMTS18",
+  "SPATA31C1",
+  "SMR3B",
+  "PRDX4",
+  "C11orf91",
+  "CCDC70",
+  "SLCO1B7",
+  "SPMAP1",
+  "SARNP",
+  "SLC2A13",
+  "MBTPS2",
+  "IFNL3",
+  "SHFL",
+  "TBC1D3C",
+  "DRD3",
+  "EIF2S3",
+  "NFILZ",
+  "FAM178B",
+  "CCT8L2",
+  "RAP1B",
+  "OR10W1",
+  "OOSP4B",
+  "IFNA13",
+  "GPR42",
+  "TAS2R46",
+  "KRTAP2-1",
+  "POU4F1",
+  "TBC1D21",
+  "IGSF8",
+  "EIF1AX"
+ ],
+ "curve": [
+  {
+   "method": "l1",
+   "k": 10,
+   "AUROC": 0.9452925785125067,
+   "within_AUROC": 0.9059867317686275
+  },
+  {
+   "method": "l1",
+   "k": 20,
+   "AUROC": 0.9469042864671331,
+   "within_AUROC": 0.907858920390522
+  },
+  {
+   "method": "l1",
+   "k": 30,
+   "AUROC": 0.9490767888959621,
+   "within_AUROC": 0.9054016322942539
+  },
+  {
+   "method": "l1",
+   "k": 60,
+   "AUROC": 0.9479265200475062,
+   "within_AUROC": 0.9156746781100592
+  },
+  {
+   "method": "l1",
+   "k": 100,
+   "AUROC": 0.948136497887162,
+   "within_AUROC": 0.9207014146565898
+  },
+  {
+   "method": "l1",
+   "k": 200,
+   "AUROC": 0.9504390841483632,
+   "within_AUROC": 0.9213906523418623
+  },
+  {
+   "method": "univariate",
+   "k": 10,
+   "AUROC": 0.9460592536977865,
+   "within_AUROC": 0.9034980398614156
+  },
+  {
+   "method": "univariate",
+   "k": 20,
+   "AUROC": 0.9419657101066431,
+   "within_AUROC": 0.9094346570401466
+  },
+  {
+   "method": "univariate",
+   "k": 30,
+   "AUROC": 0.9440178593834744,
+   "within_AUROC": 0.9205263650549423
+  },
+  {
+   "method": "univariate",
+   "k": 60,
+   "AUROC": 0.9474404981698639,
+   "within_AUROC": 0.9273991014861784
+  },
+  {
+   "method": "univariate",
+   "k": 100,
+   "AUROC": 0.9459527283547416,
+   "within_AUROC": 0.9310469953398863
+  },
+  {
+   "method": "univariate",
+   "k": 200,
+   "AUROC": 0.9465217170861017,
+   "within_AUROC": 0.9275957777700503
+  }
+ ]
+}

@@ -1,12 +1,14 @@
-"""Upload code + processed data as a private Kaggle dataset and launch private CPU kernels.
+"""Upload code + processed data as a private Kaggle dataset and launch private Kaggle kernels.
 
 Requires KAGGLE_API_TOKEN (or ~/.kaggle credentials) in the environment.
-Usage:  python push_to_kaggle.py                      # create/update dataset, push the benchmark jobs (J1-J3)
-        python push_to_kaggle.py --only tmm-v2-validate --kernels-only   # push the validation job (after J1-J3)
+Usage:  python push_to_kaggle.py --dataset-only       # update data/code without launching compute
+        python push_to_kaggle.py --kernels-only       # launch the v3 benchmark jobs when quota is available
+        python push_to_kaggle.py --only tmm-v3-validate --kernels-only   # after the v3 benchmark jobs
         python push_to_kaggle.py --status | --fetch
 """
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -14,7 +16,23 @@ import time
 
 import config as C
 
-USER = "rifathosain"
+
+def _load_local_kaggle_env():
+    """Load only Kaggle settings from the project .env without logging their values."""
+    path = C.ROOT.parent / ".env"
+    if not path.exists():
+        return
+    allowed = {"KAGGLE_API_TOKEN", "KAGGLE_USERNAME"}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        if not raw or raw.lstrip().startswith("#") or "=" not in raw:
+            continue
+        key, value = raw.split("=", 1)
+        if key.strip() in allowed and key.strip() not in os.environ:
+            os.environ[key.strip()] = value.strip().strip("\"'")
+
+
+_load_local_kaggle_env()
+USER = os.environ.get("KAGGLE_USERNAME", "shellshocker")
 DATASET = f"{USER}/tmm-telomere-pipeline"
 # slug -> (shell steps run inside /kaggle/working/tmm, kernel sources whose outputs are merged first)
 JOBS = {
@@ -40,9 +58,40 @@ JOBS.update({
                          "python -u run_experiments.py --tasks tel_no5p",
                          "python -u signature.py --tasks tel_no5p"], []),
 })
-DEFAULT_JOBS = ["tmm-v2-alt", "tmm-v2-tel", "tmm-v2-altpan"]
+# Leakage-hardened rerun.  These slugs intentionally do not overwrite the historical v2 kernels/results.
+JOBS.update({
+    "tmm-v3-alt": (["python -u data_build.py --transcriptome-tcga",
+                    "python -u run_experiments.py --tasks alt",
+                    "python -u signature.py --tasks alt"], []),
+    "tmm-v3-altaux": (["python -u data_build.py --transcriptome-tcga",
+                       "python -u run_experiments.py --tasks alt_noATRX,alt_pheno,tl",
+                       "python -u signature.py --tasks alt_pheno"], []),
+    "tmm-v3-tel": (["python -u data_build.py --transcriptome-tcga",
+                    "python -u run_experiments.py --tasks tel",
+                    "python -u signature.py --tasks tel"], []),
+    "tmm-v3-telsens": (["python -u data_build.py --transcriptome-tcga",
+                        "python -u run_experiments.py --tasks tel_no5p15,tel_no5p"], []),
+    "tmm-v3-altpan": (["python -u data_build.py --transcriptome-tcga",
+                       "python -u run_experiments.py --tasks alt_pan"], []),
+    "tmm-v3-altpan-sig": (["python -u data_build.py --transcriptome-tcga",
+                           "python -u signature.py --tasks alt_pan"], []),
+    "tmm-v3-confounding": (["python -u data_build.py --transcriptome-tcga",
+                            "python -u data_build.py --cnv",
+                            "python -u confounding.py"], []),
+    "tmm-v3-validate": (["python -u data_build.py --transcriptome",
+                         "python -u data_build.py --clinical",
+                         "python -u data_build.py --wu2025",
+                         "python -u validate.py",
+                         "python -u analyze.py"],
+                        [f"{USER}/tmm-v3-alt", f"{USER}/tmm-v3-altaux",
+                         f"{USER}/tmm-v3-tel", f"{USER}/tmm-v3-telsens",
+                         f"{USER}/tmm-v3-altpan", f"{USER}/tmm-v3-altpan-sig"]),
+})
+DEFAULT_JOBS = ["tmm-v3-alt", "tmm-v3-altaux", "tmm-v3-tel", "tmm-v3-telsens",
+                "tmm-v3-altpan", "tmm-v3-altpan-sig"]
+GPU_JOBS = {"tmm-v3-alt", "tmm-v3-tel"}  # Only these jobs contain Torch MLP candidates.
 CODE = ["config.py", "data_build.py", "models.py", "evaluate.py", "analyze.py", "run_experiments.py",
-        "signature.py", "validate.py", "make_figures.py"]
+        "signature.py", "validate.py", "confounding.py", "make_figures.py"]
 SKIP_DATA = {"expr_expanded.csv.gz", "ccle_expr.csv.gz"}          # obsolete / superseded inputs
 STAGE = C.ROOT / "kaggle_stage"
 OUT = C.ROOT / "kaggle_outputs"
@@ -72,6 +121,7 @@ for f in glob.glob("/kaggle/input/**/tmm/data/frozen/*", recursive=True):
     shutil.copy(f, os.path.join(root, "data", "frozen"))
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "git+https://github.com/ucscXena/xenaPython"], check=True)
 env = dict(os.environ, TMM_ROOT=root, PYTHONWARNINGS="ignore")
+print("torch/CUDA availability:", __import__("torch").cuda.is_available(), flush=True)
 try:
     for step in STEPS:
         print("\\n########", step, flush=True)
@@ -125,7 +175,8 @@ def push_kernels(only=None):
         k.mkdir(parents=True)
         (k / "run.py").write_text(RUNNER.format(steps=json.dumps(steps)))
         json.dump({"id": f"{USER}/{slug}", "title": slug, "code_file": "run.py", "language": "python",
-                   "kernel_type": "script", "is_private": True, "enable_gpu": False, "enable_internet": True,
+                   "kernel_type": "script", "is_private": True, "enable_gpu": slug in GPU_JOBS,
+                   "enable_internet": True,
                    "dataset_sources": [DATASET], "competition_sources": [], "kernel_sources": sources},
                   open(k / "kernel-metadata.json", "w"), indent=1)
         kaggle("kernels", "push", "-p", str(k))

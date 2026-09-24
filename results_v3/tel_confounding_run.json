@@ -1,0 +1,20 @@
+{
+ "task": "tel",
+ "n": 6729,
+ "n_positive": 4917,
+ "n_expression_genes": 17243,
+ "n_cnv_genes": 17244,
+ "expression_source": "protein-coding transcriptome",
+ "region_sets": {
+  "5p15": [
+   "5p15"
+  ]
+ },
+ "n_region_genes_removed": {
+  "5p15": 49
+ },
+ "outer_folds": 5,
+ "outer_repeats": 5,
+ "residualization": "gene-wise slope/intercept fit on each outer training fold only",
+ "minutes": 159.3888275583585
+}

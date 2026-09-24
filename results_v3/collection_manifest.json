@@ -1,0 +1,624 @@
+{
+    "schema":  1,
+    "collected_utc":  "2026-09-21T05:15:03.740565+00:00",
+    "jobs":  [
+                 "tmm-v3-alt",
+                 "tmm-v3-altaux",
+                 "tmm-v3-tel",
+                 "tmm-v3-telsens",
+                 "tmm-v3-altpan",
+                 "tmm-v3-altpan-sig",
+                 "tmm-v3-confounding",
+                 "tmm-v3-validate"
+             ],
+    "results":  "results_v3",
+    "frozen":  "data/frozen_v3",
+    "files_copied":  [
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_importance.csv",
+                             "destination":  "results_v3/alt_importance.csv",
+                             "sha256":  "b523f8eb36aba3a03347ea5b9bfeb3126fa3cdb5b1d9bef4f51265e4b9de015b"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_oof.npz",
+                             "destination":  "results_v3/alt_oof.npz",
+                             "sha256":  "1181d32312fdf06e99169cd7c9ca6bc8f33f3e426f2dbebf038968fcf3cf0e8b"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_random_null.csv",
+                             "destination":  "results_v3/alt_random_null.csv",
+                             "sha256":  "0e580004af37df7ae153a46a89610d77f50a4d281bcb38dfca683499505594fd"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_sig_curve_oof.npz",
+                             "destination":  "results_v3/alt_sig_curve_oof.npz",
+                             "sha256":  "68ffe0b404772a6d2c47be9174ee61752527e19f30085fa67d0a79866a61ab09"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_sig_oof.npz",
+                             "destination":  "results_v3/alt_sig_oof.npz",
+                             "sha256":  "180a184cde31fd8ad773d163c5507b36c07509649ab7374a66fb45bfaa929db9"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_signature.json",
+                             "destination":  "results_v3/alt_signature.json",
+                             "sha256":  "b737ae67b7d980692dddd9bf1954be23949c4af44985a867ada7f026d9a55e76"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_signature_curve.csv",
+                             "destination":  "results_v3/alt_signature_curve.csv",
+                             "sha256":  "2f64ee3886da5c1fa94d986ee8c3b8d80aa9113ee76912b683aeb7f465433837"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_signature_genes.csv",
+                             "destination":  "results_v3/alt_signature_genes.csv",
+                             "sha256":  "d1d6e55f6e04c6f5307eced78fd2f148cf90930105962a9b518b2af024ff99e7"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_timing.csv",
+                             "destination":  "results_v3/alt_timing.csv",
+                             "sha256":  "107fb39f9ab16f2dac6aee22ea9771d8c6d4a01dff8836d80ef010f0579850f1"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/alt_tw_oof.npz",
+                             "destination":  "results_v3/alt_tw_oof.npz",
+                             "sha256":  "9239c33782572a23a903ac920da6d01478c737a9516a09a3b9d6708052244478"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/results/run_info_alt.json",
+                             "destination":  "results_v3/run_info_alt.json",
+                             "sha256":  "c8afe51586061c341d22340c8e00e889bc962a46895f0aa03a0e6e5e6031d935"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/data/frozen/alt_signature_locked.json",
+                             "destination":  "data/frozen_v3/alt_signature_locked.json",
+                             "sha256":  "e308df25a1829dec81dde93a7449381fb9b602e71a5942ddf7ac2a8152cc2082"
+                         },
+                         {
+                             "job":  "tmm-v3-alt",
+                             "source":  "kaggle_outputs/tmm-v3-alt/tmm/data/frozen/alt_signature_locked_heldout.json",
+                             "destination":  "data/frozen_v3/alt_signature_locked_heldout.json",
+                             "sha256":  "0f1ce8516ae685bed3477fa8657aa2f09dd4d00f0e0337a43aaf92374f8a04e7"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_noATRX_importance.csv",
+                             "destination":  "results_v3/alt_noATRX_importance.csv",
+                             "sha256":  "2ad92abd8fa928a75ee873998ce35d145c980b19e38eab99e93ac596f063ac6f"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_noATRX_oof.npz",
+                             "destination":  "results_v3/alt_noATRX_oof.npz",
+                             "sha256":  "abf1f018a0b945619dcd29a130aa3dce58d5affc153cf42fc6913a2740458d57"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_noATRX_timing.csv",
+                             "destination":  "results_v3/alt_noATRX_timing.csv",
+                             "sha256":  "008e5585898bede11c1a4df046d487f50278d643865871dcf97da86698ebba32"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_noATRX_tw_oof.npz",
+                             "destination":  "results_v3/alt_noATRX_tw_oof.npz",
+                             "sha256":  "3b149af941ffab7653531347d961b9c003b3a57bcc577e5f15ec11ae09970f3a"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_importance.csv",
+                             "destination":  "results_v3/alt_pheno_importance.csv",
+                             "sha256":  "bd48955911aca66458838f1db855818f4a50b4dded2ada80857e4c7bfd80b377"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_oof.npz",
+                             "destination":  "results_v3/alt_pheno_oof.npz",
+                             "sha256":  "c2c96787da8d6850007aea90017556691ebfebaf6e8de05eb0f06b7fb06bf6aa"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_sig_curve_oof.npz",
+                             "destination":  "results_v3/alt_pheno_sig_curve_oof.npz",
+                             "sha256":  "572c0cf5c5054b223bd398b7d633cfff91dfb2da16ae8047de99503dbd565747"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_sig_oof.npz",
+                             "destination":  "results_v3/alt_pheno_sig_oof.npz",
+                             "sha256":  "eb521fcdfb5ed9b1b3f9182ede9eab6b543b8e896beef81491e26d08f3e2432d"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_signature.json",
+                             "destination":  "results_v3/alt_pheno_signature.json",
+                             "sha256":  "8cb43aa4ee1a5d15397e182094db8e6457ae629f578d49d7b8dd10877f476df6"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_signature_curve.csv",
+                             "destination":  "results_v3/alt_pheno_signature_curve.csv",
+                             "sha256":  "c3371da54b1d99d631795369552091395fad6dde56223126a93df70eb92c376d"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_signature_genes.csv",
+                             "destination":  "results_v3/alt_pheno_signature_genes.csv",
+                             "sha256":  "23d17c2a521d2fe8904aec352fcda9bc9a13b199b69456ae4945b83570b13647"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_timing.csv",
+                             "destination":  "results_v3/alt_pheno_timing.csv",
+                             "sha256":  "9183b8ba860257b8163637a7ff6cd4efda44f9d2f3cfd7dd3ddcfbe3d2dc3bce"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/alt_pheno_tw_oof.npz",
+                             "destination":  "results_v3/alt_pheno_tw_oof.npz",
+                             "sha256":  "5b0f5a2a2c485311b729df932c25223b7e9b611530307e5ee4921b524de99553"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/run_info_alt_noATRX_alt_pheno_tl.json",
+                             "destination":  "results_v3/run_info_alt_noATRX_alt_pheno_tl.json",
+                             "sha256":  "44102fb332581e65b7e1028a74e4d30b200389f6eb7c967fad757002b645f7a8"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/tl_oof.npz",
+                             "destination":  "results_v3/tl_oof.npz",
+                             "sha256":  "0da0dd585fa613d5bec6711b4bf50143f7bda2aba46fb7b7601934aafc7bef74"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/results/tl_timing.csv",
+                             "destination":  "results_v3/tl_timing.csv",
+                             "sha256":  "ef2063e559d8c36a90482d42039f1ea90e473616472ab524938d58a392502340"
+                         },
+                         {
+                             "job":  "tmm-v3-altaux",
+                             "source":  "kaggle_outputs/tmm-v3-altaux/tmm/data/frozen/alt_pheno_signature_locked.json",
+                             "destination":  "data/frozen_v3/alt_pheno_signature_locked.json",
+                             "sha256":  "ef7b8a5fd82acc7002ee7cec45f97599d5ab8ccb7af94ec0f76c07854cc1ebf4"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/run_info_tel.json",
+                             "destination":  "results_v3/run_info_tel.json",
+                             "sha256":  "4758b43bae7eb1c0b3cd87a9343007728052806fa6fecf3f60cf4ea8dae7ca12"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_importance.csv",
+                             "destination":  "results_v3/tel_importance.csv",
+                             "sha256":  "b60211d2d8e7538387a5a99feb950b74865efad8ec60fa2a950b8cfe508467d3"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_oof.npz",
+                             "destination":  "results_v3/tel_oof.npz",
+                             "sha256":  "0827202bb52f2b7cabc141d89f8c7c6b5c8c38476cbf8cb30adb5c77b00fb9de"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_random_null.csv",
+                             "destination":  "results_v3/tel_random_null.csv",
+                             "sha256":  "3a02c15b53224ed67922eea5447bc708f67442785545a923ecc62e823ecff42a"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_sig_curve_oof.npz",
+                             "destination":  "results_v3/tel_sig_curve_oof.npz",
+                             "sha256":  "391c5a806b6a89b8d800365c093b4d13bd7a50314f122f879a47771dc9f7118c"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_sig_oof.npz",
+                             "destination":  "results_v3/tel_sig_oof.npz",
+                             "sha256":  "7628d387f775d02978d8d716e8672c8899796415273cd77b13f3fcae376b7871"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_signature.json",
+                             "destination":  "results_v3/tel_signature.json",
+                             "sha256":  "0d351fd403b0aab6edb50f8ff9aee746bb98571d87f75c4a50e823a81b71b4be"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_signature_curve.csv",
+                             "destination":  "results_v3/tel_signature_curve.csv",
+                             "sha256":  "8df3f815bd07fe6c47a28cf7150fa2222c8b8477402774a99305ec07eab815cd"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_signature_genes.csv",
+                             "destination":  "results_v3/tel_signature_genes.csv",
+                             "sha256":  "363e617abf2670d7f75561d4e0b35c64b024de2b2cb8fa0704b76e6bb9dd9351"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_timing.csv",
+                             "destination":  "results_v3/tel_timing.csv",
+                             "sha256":  "a750eca689230ee2dd65970bda5be1baa96699675d9df40f663f2929328db676"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/results/tel_tw_oof.npz",
+                             "destination":  "results_v3/tel_tw_oof.npz",
+                             "sha256":  "c8e42d52fe384db73ea861365208a2b25bdee897b95ed305fafb54554a4dde9f"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/data/frozen/tel_signature_locked.json",
+                             "destination":  "data/frozen_v3/tel_signature_locked.json",
+                             "sha256":  "04b56f9037230f8786d0d972a07eaf067e677eb5b158d5401bad90f494b735cb"
+                         },
+                         {
+                             "job":  "tmm-v3-tel",
+                             "source":  "kaggle_outputs/tmm-v3-tel/tmm/data/frozen/tel_signature_locked_heldout.json",
+                             "destination":  "data/frozen_v3/tel_signature_locked_heldout.json",
+                             "sha256":  "24d3705b91aae17532149a207ca1b63ff87a294bd046d0412b338a1ccaca06c9"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/run_info_tel_no5p15_tel_no5p.json",
+                             "destination":  "results_v3/run_info_tel_no5p15_tel_no5p.json",
+                             "sha256":  "e45df33ca979d415ead81b5d0107568f06072a4ca85a08ee3f8fc9334bfc11a1"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p15_importance.csv",
+                             "destination":  "results_v3/tel_no5p15_importance.csv",
+                             "sha256":  "35aa3334d5a0f40fa01fa08e0fff74b76d164200919647b9594d99a77ad6f53a"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p15_oof.npz",
+                             "destination":  "results_v3/tel_no5p15_oof.npz",
+                             "sha256":  "ad88723deed02a1c8f7dc3ba5e20a076a22c2ec67498f498be7b9c34f4849666"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p15_timing.csv",
+                             "destination":  "results_v3/tel_no5p15_timing.csv",
+                             "sha256":  "56a92cdc2aed4b1b18fd22550fc3e60f8db36c50514fd1226e79c2fdb30ce94e"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p15_tw_oof.npz",
+                             "destination":  "results_v3/tel_no5p15_tw_oof.npz",
+                             "sha256":  "71484098fb69607ffac35043cad8a2e91e81cce621ebbbb294de34004bc1db71"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p_importance.csv",
+                             "destination":  "results_v3/tel_no5p_importance.csv",
+                             "sha256":  "35aa3334d5a0f40fa01fa08e0fff74b76d164200919647b9594d99a77ad6f53a"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p_oof.npz",
+                             "destination":  "results_v3/tel_no5p_oof.npz",
+                             "sha256":  "ad88723deed02a1c8f7dc3ba5e20a076a22c2ec67498f498be7b9c34f4849666"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p_timing.csv",
+                             "destination":  "results_v3/tel_no5p_timing.csv",
+                             "sha256":  "442dd1591560b647cf239d54d132edbeea5ad81d90bd661d3868b12d93cd15d2"
+                         },
+                         {
+                             "job":  "tmm-v3-telsens",
+                             "source":  "kaggle_outputs/tmm-v3-telsens/tmm/results/tel_no5p_tw_oof.npz",
+                             "destination":  "results_v3/tel_no5p_tw_oof.npz",
+                             "sha256":  "a41557a786e8a06c4ca0dcc5c9520d6faca0ba5a80415e7cc41d5ac65f2f2c6e"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan",
+                             "source":  "kaggle_outputs/tmm-v3-altpan/tmm/results/alt_pan_importance.csv",
+                             "destination":  "results_v3/alt_pan_importance.csv",
+                             "sha256":  "5d7fc50a6ab41922606bc10e692ccac2477a2c80f68a05bcb79b83d7cf880a41"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan",
+                             "source":  "kaggle_outputs/tmm-v3-altpan/tmm/results/alt_pan_oof.npz",
+                             "destination":  "results_v3/alt_pan_oof.npz",
+                             "sha256":  "0185a938ba77690394047ad89f5e77dd10c92231b2628ec87b5a6cdb2da63cc2"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan",
+                             "source":  "kaggle_outputs/tmm-v3-altpan/tmm/results/alt_pan_timing.csv",
+                             "destination":  "results_v3/alt_pan_timing.csv",
+                             "sha256":  "5b659bd559728aa56aed161447765b1aaf3553d91f11a922a3002bc75750ae31"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan",
+                             "source":  "kaggle_outputs/tmm-v3-altpan/tmm/results/alt_pan_tw_oof.npz",
+                             "destination":  "results_v3/alt_pan_tw_oof.npz",
+                             "sha256":  "48da41fda629e461d57c1de6cff2b4749de7cae989852b689940327879d0c8cb"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan",
+                             "source":  "kaggle_outputs/tmm-v3-altpan/tmm/results/run_info_alt_pan.json",
+                             "destination":  "results_v3/run_info_alt_pan.json",
+                             "sha256":  "066c073da96dec0f2837b15cbd8e03e523e8b911be2694c142bc46cf9b0423af"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/results/alt_pan_sig_curve_oof.npz",
+                             "destination":  "results_v3/alt_pan_sig_curve_oof.npz",
+                             "sha256":  "f313292e54c4105c5995a7f1e5876640b781ebf042ed1d372ace4684be866187"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/results/alt_pan_sig_oof.npz",
+                             "destination":  "results_v3/alt_pan_sig_oof.npz",
+                             "sha256":  "6d04e0f4bfcc71ef266ad237fed140ed34ad1ddf42a394b9b00485f1dcc607e7"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/results/alt_pan_signature.json",
+                             "destination":  "results_v3/alt_pan_signature.json",
+                             "sha256":  "52a2d70c23f7573f693a2d884aa79e4423b198591d807c996c190049aa70015f"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/results/alt_pan_signature_curve.csv",
+                             "destination":  "results_v3/alt_pan_signature_curve.csv",
+                             "sha256":  "c365197ffc91ceabe9e578d3b859baa640dca9860d9be42be02787c030c718aa"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/results/alt_pan_signature_genes.csv",
+                             "destination":  "results_v3/alt_pan_signature_genes.csv",
+                             "sha256":  "aec7bb4e5e2ab59593495df010c9a9124fa00428b4caa481b2ade05ae7e2d2a9"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/data/frozen/alt_pan_signature_locked.json",
+                             "destination":  "data/frozen_v3/alt_pan_signature_locked.json",
+                             "sha256":  "d8bde31f3394310af09b4c66b69162cf8f7841f48b4a6a28f56eac2d5838b06b"
+                         },
+                         {
+                             "job":  "tmm-v3-altpan-sig",
+                             "source":  "kaggle_outputs/tmm-v3-altpan-sig/tmm/data/frozen/alt_pan_signature_locked_heldout.json",
+                             "destination":  "data/frozen_v3/alt_pan_signature_locked_heldout.json",
+                             "sha256":  "d4b07b4bd69a15d8e94c8b96ac8b12b615b1b32d2810383b00b2cf1c7f940b03"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/alt_confounding_oof.npz",
+                             "destination":  "results_v3/alt_confounding_oof.npz",
+                             "sha256":  "188b29b7b1c598bc93869b806585fbadab1d114c37f27141e98ec6af422efc09"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/alt_confounding_pairs.csv",
+                             "destination":  "results_v3/alt_confounding_pairs.csv",
+                             "sha256":  "9f0736c567accae2a4e4be89008f9dfbb459de351bc10dd7f87fa9ddd445134a"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/alt_confounding_run.json",
+                             "destination":  "results_v3/alt_confounding_run.json",
+                             "sha256":  "6a1df784764f5a4443513d9e87b387563a326cab3efbb3bf2a17627bfa659e14"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/alt_confounding_summary.csv",
+                             "destination":  "results_v3/alt_confounding_summary.csv",
+                             "sha256":  "122a22d3a6f7621244ad47c7862638f23beede48a5a468f64e52f52aa27723b5"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/tel_confounding_oof.npz",
+                             "destination":  "results_v3/tel_confounding_oof.npz",
+                             "sha256":  "1a5e0bcf6fbeebc369e23b9ecb7c50dac7acc7a30c37d8ad0440f2904013a49b"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/tel_confounding_pairs.csv",
+                             "destination":  "results_v3/tel_confounding_pairs.csv",
+                             "sha256":  "7f487e113ca2c9e85cbd96c0395aae67c35d07ce9352b1a30c26f122f43c8480"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/tel_confounding_run.json",
+                             "destination":  "results_v3/tel_confounding_run.json",
+                             "sha256":  "e6c6d2f48c48136e92ec6809fdb75f0462136081509eb2d6eb44a63d25d8d861"
+                         },
+                         {
+                             "job":  "tmm-v3-confounding",
+                             "source":  "kaggle_outputs/tmm-v3-confounding/tmm/results/tel_confounding_summary.csv",
+                             "destination":  "results_v3/tel_confounding_summary.csv",
+                             "sha256":  "ea762e2996817b5615dfa6a8fdc8c13b200a607a834d1e79767d26c7f926d112"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_noATRX_pairs.csv",
+                             "destination":  "results_v3/alt_noATRX_pairs.csv",
+                             "sha256":  "e52a27e6fe56075638062b902415ce2b344ba233fed4526e5a5648e1b0c30b3b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_noATRX_summary.csv",
+                             "destination":  "results_v3/alt_noATRX_summary.csv",
+                             "sha256":  "ec066738fb1bd72b4ed47bc59a19d199d8bf7d0e5ac13856cacc066354b3ba61"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pairs.csv",
+                             "destination":  "results_v3/alt_pairs.csv",
+                             "sha256":  "2ca0dd6cdcf42f7bc2ede04f7547e63adae0e9e662c42e4cdd1d8ca5f2167d70"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pan_pairs.csv",
+                             "destination":  "results_v3/alt_pan_pairs.csv",
+                             "sha256":  "a750ab872e3ae5f3dc7f8fca54676276865972baf32eba7942063010c4741e3b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pan_signature_curve_ci.csv",
+                             "destination":  "results_v3/alt_pan_signature_curve_ci.csv",
+                             "sha256":  "11f202c4ff124af4e2d7eaa870f7bded25d7eead582ddd47f682d97d9522104b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pan_summary.csv",
+                             "destination":  "results_v3/alt_pan_summary.csv",
+                             "sha256":  "d3020c6671fda6e05504d5e7b32c67c242c72ccc86321229d202c1a3a897676e"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pheno_pairs.csv",
+                             "destination":  "results_v3/alt_pheno_pairs.csv",
+                             "sha256":  "779e164f7cf87019671b4ad29f97dcf219248f2c2e4904cf6e74ea4bd2b0244b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_pheno_summary.csv",
+                             "destination":  "results_v3/alt_pheno_summary.csv",
+                             "sha256":  "0e97f969224cd743f1552b0384856bfd6b1a85714e935a385144e82895a06084"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_signature_curve_ci.csv",
+                             "destination":  "results_v3/alt_signature_curve_ci.csv",
+                             "sha256":  "03351e92dc7c9f0c9fc8aca789b93c753bca0f5d2da428241b28fb79ed95bd42"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_summary.csv",
+                             "destination":  "results_v3/alt_summary.csv",
+                             "sha256":  "6ae33e3be54368f2f64e4ecfcf792053c29ebdb208977af9a0505a00f0bc7bb1"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/alt_within_subtype.csv",
+                             "destination":  "results_v3/alt_within_subtype.csv",
+                             "sha256":  "d967fe395ebf3b4a6f3947cf8b9110a992efeb55dc4758258fd3d362f0dec53d"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_no5p15_pairs.csv",
+                             "destination":  "results_v3/tel_no5p15_pairs.csv",
+                             "sha256":  "0cb0546408f4cce8c81e544ca22a5c2d5706a1efef737b0a896a18da4c6474a0"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_no5p15_summary.csv",
+                             "destination":  "results_v3/tel_no5p15_summary.csv",
+                             "sha256":  "7aa34e872c2a33995dc85da5f652de3615bdb5c051994d4f7efcb33d690bfb17"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_no5p_pairs.csv",
+                             "destination":  "results_v3/tel_no5p_pairs.csv",
+                             "sha256":  "8733f9b4faf7f2607bc5491864f179287f59ce0ebad3403028b172d26e226056"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_no5p_summary.csv",
+                             "destination":  "results_v3/tel_no5p_summary.csv",
+                             "sha256":  "7505b628bffbb117dbf102890f774c3160e48b8ea141a73bc493fdd9f45acaee"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_pairs.csv",
+                             "destination":  "results_v3/tel_pairs.csv",
+                             "sha256":  "537b5d11fb651443e62321c73db3c87a1abbf18cbd4242a54dd4ba031db0a52b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_signature_curve_ci.csv",
+                             "destination":  "results_v3/tel_signature_curve_ci.csv",
+                             "sha256":  "414dd5f06c5382db5c4f76cdc9252c727fa569477a06ec0705ba2128408654fb"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tel_summary.csv",
+                             "destination":  "results_v3/tel_summary.csv",
+                             "sha256":  "67d5bccd74caef588697dedc5098427bb5ec35220227c63ce9eab5107fd93533"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tl_pairs.csv",
+                             "destination":  "results_v3/tl_pairs.csv",
+                             "sha256":  "69312c9d34214996da444e64d0b67f49a531d0635fa867b4a35b58ae8a2fb801"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/tl_summary.csv",
+                             "destination":  "results_v3/tl_summary.csv",
+                             "sha256":  "750cb3a31c5a1b46025a48a0b1a54434d87d9066b7722577b84779f85498cc35"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_alt_probability_thresholds.csv",
+                             "destination":  "results_v3/validation_alt_probability_thresholds.csv",
+                             "sha256":  "cb5f7e3f2df4c0fd443b4ddac265ae2172ff2f629828a04a5890dfba22cc48c1"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_celllines.csv",
+                             "destination":  "results_v3/validation_celllines.csv",
+                             "sha256":  "3bb462a68271531aca4a35358d418c235cb7e6172233e84186249125717be040"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_chromosome_arms.csv",
+                             "destination":  "results_v3/validation_chromosome_arms.csv",
+                             "sha256":  "2612f56606c7d4481efc8780eb68d2d328538ab2b33c79fb96ad78d3b0cc27d8"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_enrichment.csv",
+                             "destination":  "results_v3/validation_enrichment.csv",
+                             "sha256":  "cd8327a5957f97d1e6224079d322a2e8860712573cd8a5f03dbda3b2e5f374ce"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_external.csv",
+                             "destination":  "results_v3/validation_external.csv",
+                             "sha256":  "9dd0df8f89211cf4521c656ff68c093ba42bca67c74275b36854a1fb4d10e18b"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_platform.csv",
+                             "destination":  "results_v3/validation_platform.csv",
+                             "sha256":  "83fa5cacdbdd53b3cde931456a7d1684339978c6eae5eba7d8e1ccfc36b14657"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_platform_scores.csv",
+                             "destination":  "results_v3/validation_platform_scores.csv",
+                             "sha256":  "4316fed99caea78495a809e20555ee549c7e0cc253819c34264ab78b85d750b1"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_survival.csv",
+                             "destination":  "results_v3/validation_survival.csv",
+                             "sha256":  "93fab84ec8c222d0bb45d5ccb7178351728560f7bdeacb0e45bcb12d629d874a"
+                         },
+                         {
+                             "job":  "tmm-v3-validate",
+                             "source":  "kaggle_outputs/tmm-v3-validate/tmm/results/validation_wu2025_celllines.csv",
+                             "destination":  "results_v3/validation_wu2025_celllines.csv",
+                             "sha256":  "6306b8f5a374401b1dfb9b1b361f3eea06368d3b41b39d558327766e16272351"
+                         }
+                     ]
+}

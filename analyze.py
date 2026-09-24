@@ -20,21 +20,23 @@ KIND = {"alt": "clf", "alt_noATRX": "clf", "alt_pan": "clf", "alt_pheno": "clf",
 ALL_GENES = " [all genes]"                     # suffix for reference models merged from the full telomerase task
 SIG = f"LR (signature, K={C.SIG_K})"
 TW = "LR (whole transcriptome)"
-EXTRA_OOF = {"_sig_oof.npz": SIG, "_tw_oof.npz": TW}
 META = {"y", "cancer", "sample", "subtype"}
 
 PAIRS = [
     # the headline: compact signature vs curated panel vs whole transcriptome
     (SIG, "LR (panel)"), (SIG, TW), (TW, "LR (panel)"),
     (SIG, "RF (panel)"), (SIG, "GBM (panel)"), (SIG, "MLP tuned (panel)"),
+    (SIG, "Elastic net (panel)"), (SIG, "Linear SVM (panel)"),
     # does model flexibility help on the panel?
     ("RF (panel)", "LR (panel)"), ("GBM (panel)", "LR (panel)"), ("MLP (panel)", "LR (panel)"),
     ("MLP tuned (panel)", "MLP (panel)"),
+    ("Elastic net (panel)", "LR (panel)"), ("Linear SVM (panel)", "LR (panel)"),
+    ("Elastic net (whole transcriptome)", TW), ("Linear SVM (whole transcriptome)", TW),
     # beyond glioma molecular subtype
     ("LR (panel) + glioma subtype", "Cancer + glioma subtype only"), (SIG, "Cancer + glioma subtype only"),
     # published telomerase methods
-    (SIG, "Barthel 2017 score (published)"), (SIG, "LR (EXTEND genes, TERT/TERC removed)"),
-    (TW, "LR (EXTEND genes, TERT/TERC removed)"), ("LR (panel)", "LR (Barthel 2017 genes)"),
+    (SIG, "Barthel 2017 score (published)"), (SIG, "LR (EXTEND gene set, TERT removed)"),
+    (TW, "LR (EXTEND gene set, TERT removed)"), ("LR (panel)", "LR (Barthel 2017 genes)"),
     # TERT-neighbourhood sensitivity: same model with vs without the excluded region
     (TW, TW + ALL_GENES), (SIG, SIG + ALL_GENES),
 ]
@@ -44,12 +46,23 @@ def load_oof(path):
     z = np.load(path, allow_pickle=True)
     oof = {k.replace("_", " "): z[k] for k in z.files if k not in META}
     task = path.name[:-len("_oof.npz")]
-    for suffix, label in EXTRA_OOF.items():        # models produced by separate stages
-        f = path.parent / f"{task}{suffix}"
-        if f.exists():
-            arr = np.load(f, allow_pickle=True)["oof"]
-            if arr.shape[1] == len(z["y"]):
-                oof[label] = arr
+    f = path.parent / f"{task}_sig_oof.npz"       # model produced by signature.py
+    if f.exists():
+        arr = np.load(f, allow_pickle=True)["oof"]
+        if arr.shape[1] == len(z["y"]):
+            oof[SIG] = arr
+    f = path.parent / f"{task}_tw_oof.npz"        # one or more transcriptome-wide baselines
+    if f.exists():
+        wide = np.load(f, allow_pickle=True)
+        if "oof" in wide.files:                   # compatibility with pre-nested historical outputs
+            if wide["oof"].shape[1] == len(z["y"]):
+                oof[TW] = wide["oof"]
+        for key in wide.files:
+            if key in {"n_genes", "source", "oof"}:
+                continue
+            arr = wide[key]
+            if getattr(arr, "ndim", 0) == 2 and arr.shape[1] == len(z["y"]):
+                oof[key.replace("_", " ")] = arr
     subtype = z["subtype"].astype(str) if "subtype" in z.files else None
     return oof, z["y"], z["cancer"].astype(str), subtype
 

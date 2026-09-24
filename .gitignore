@@ -1,14 +1,30 @@
-# secrets
+# Secrets and local credentials
 .env
-# downloaded and derived data (rebuilt by data_build.py)
+.env.*
+!.env.example
+
+# Downloaded and derived data (rebuilt by data_build.py)
 data/raw/
 data/processed/
 *.npy
-# run outputs
+
+# Historical or transient run outputs. The curated v3 release artifacts are
+# deliberately tracked in results_v3/, figures_v3/, and data/frozen_v3/.
 results/
 figures/
 kaggle_stage/
 kaggle_outputs/
-# python
+
+# Python and test caches
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local tools, editors, and operating-system files
+.tools/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

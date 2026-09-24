@@ -1,0 +1,11 @@
+,seconds
+Cancer type only,0.25331878662109375
+LR (panel),9.684837102890015
+Elastic net (panel),24.266263008117676
+RF (panel),51.73663067817688
+GBM (panel),9.421615839004517
+MLP (panel),18.306231021881104
+Linear SVM (panel),4.313395977020264
+MLP tuned (panel),115.03068470954895
+Cancer + glioma subtype only,0.26604127883911133
+LR (panel) + glioma subtype,5.867136240005493

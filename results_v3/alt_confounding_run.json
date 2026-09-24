@@ -1,0 +1,26 @@
+{
+ "task": "alt",
+ "n": 872,
+ "n_positive": 257,
+ "n_expression_genes": 17243,
+ "n_cnv_genes": 17244,
+ "expression_source": "protein-coding transcriptome",
+ "region_sets": {
+  "1p/17p": [
+   "1p",
+   "17p"
+  ],
+  "ATRX/DAXX cytobands": [
+   "Xq21",
+   "6p21"
+  ]
+ },
+ "n_region_genes_removed": {
+  "1p/17p": 1243,
+  "ATRX/DAXX cytobands": 290
+ },
+ "outer_folds": 5,
+ "outer_repeats": 5,
+ "residualization": "gene-wise slope/intercept fit on each outer training fold only",
+ "minutes": 18.96544169187546
+}
