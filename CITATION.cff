@@ -2,8 +2,9 @@ cff-version: 1.2.0
 message: "If you use TeloSig, please cite the associated manuscript and this software release."
 title: "TeloSig: Confounder-aware transcriptomic inference of telomere-maintenance mechanisms"
 type: software
-version: 3.0.0
-date-released: 2026-09-24
+version: 1.0.1
+date-released: 2026-11-08
+doi: 10.5281/zenodo.23104718
 authors:
   - family-names: Hossain
     given-names: "Md. Rifat"

@@ -1,10 +1,13 @@
-numpy
-pandas
+# Versions used for the released analysis (Kaggle, Python 3.12.13). The v1.0.1 correction of the WGS
+# validation was recomputed with scikit-learn 1.6.1, which reproduces the released outputs exactly;
+# newer scikit-learn releases change histogram-gradient-boosting results slightly.
+numpy==2.0.2
+pandas==2.3.3
 scipy
-scikit-learn
+scikit-learn==1.6.1
 matplotlib
 requests
 openpyxl
-torch
+torch==2.10.0
 xenaPython @ git+https://github.com/ucscXena/xenaPython
 statsmodels

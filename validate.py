@@ -101,6 +101,8 @@ def external(lab, expr, ext):
         e = ext[ext["sample"].isin(expr.index) & ext["sample"].isin(T_all.index)].copy()
         if subset:
             e = e[e.cancer.isin(subset)]
+        if target_col == "y_alt_wgs":           # no WGS ALT probability -> unlabelled, never ALT-negative
+            e = e[e.alt_probability.notna()]
         e = e.dropna(subset=[target_col])
         target = e[target_col].values
         if len(e) < 20 or target.sum() < 5:

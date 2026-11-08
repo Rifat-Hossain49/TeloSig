@@ -27,7 +27,8 @@ To audit a local manuscript for unresolved `\\TBD{...}` markers as well, append
 `--paper path/to/main.tex` to the second command.
 
 The collector records SHA-256 hashes in `results_v3/collection_manifest.json`. Paths in the public manifest are
-repository-relative; the hashes are unchanged from the accepted run.
+repository-relative. The hashes are unchanged from the collected run except for the post-collection correction
+listed under `post_collection_corrections` (v1.0.1; see `CHANGELOG.md`).
 
 ## Rebuild figures from the released results
 
