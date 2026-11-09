@@ -94,6 +94,17 @@ python make_figures.py
 
 These commands are documented for reproducibility, not as a request to run them without compute quota.
 
+## Naming in result files and figures
+
+- `GBM (panel)` in the result CSVs is **histogram gradient boosting** on the curated panel. Figures and
+  tables display it as `HGB (panel)` so it cannot be confused with glioblastoma (GBM).
+- The `tel` task is the **TERT expression proxy** (detectable vs undetectable *TERT* RNA), not a direct
+  measurement of telomerase enzymatic activity.
+- Rendered figure files map to manuscript figures as follows: `fig1_study_design` (Figure 1),
+  `fig2_feature_sets` (2), `fig3_signature_size` (3), `fig4_subtype_control` (4), `fig6_cell_lines` (5),
+  `fig8_karyotype_controls` (6), `fig5_validation` (7), `fig7_survival` (8); `figS1`–`figS6` are
+  Supplementary Figures S1–S6.
+
 ## Key files
 
 | File | Purpose |
@@ -117,6 +128,11 @@ gene-level CNV is the TCGA Pan-Cancer GISTIC2 whole-genome-microarray matrix mat
 TCGA cohort, and tumor purity is the open PanCanAtlas ABSOLUTE call. Other inputs are the Barthel, Sieverling and EXTEND supplementary data, the Wu 2025 qTRAP/C-circle
 atlas, the fixed 2022 Cell Model Passports RNA-seq archive, PCAWG identifier maps and CCLE expression. Exact
 source identifiers are fixed in `config.py`.
+
+## Versions
+
+See `CHANGELOG.md`. v1.0.1 corrects the WGS-validation labelling of five donors without an ALT probability
+and the figure labels; v1.0.0 is the original manuscript release.
 
 ## Citation
 

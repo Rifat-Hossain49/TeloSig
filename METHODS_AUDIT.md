@@ -1,6 +1,6 @@
-# Methods audit: reviewer concerns mapped to accepted v3
+# Methods audit: methodological concerns mapped to the v3 implementation
 
-| Reviewer concern | v3 implementation and accepted evidence | Status |
+| Methodological concern | v3 implementation and evidence | Status |
 |---|---|---|
 | Hyperparameters reused across outer folds | Signature L1 strength and MLP search are selected independently within every outer training set. | Passed |
 | PCAWG leakage through preselection | Donors are removed before filtering, tuning, selection, scaling, fitting and threshold selection. | Passed |
@@ -10,7 +10,8 @@
 | 5p15 reconstructs the TERT locus | Both 5p15 and whole-5p telomerase sensitivities completed; transcriptome AUROC remained 0.808. | Passed |
 | Karyotype drives the signal | Matched CNV-only, label-locus-excluded CNV, region exclusions, fold-wise residualisation and joint models completed. | Passed |
 | PCAWG is not independent patients | Manuscript calls this held-out label/assay validation in overlapping TCGA donors. | Passed |
-| Pooled WGS results obscure transfer | Overall and eligible per-cancer estimates are reported; within-cancer ALT transfer was 0.519–0.542. | Passed |
+| Pooled WGS results obscure transfer | Overall and eligible per-cancer estimates are reported; within-cancer ALT transfer was 0.504–0.536. | Passed |
+| Donors without a WGS ALT probability | Five mapped donors lack an ALT probability; since v1.0.1 they are unlabelled for every ALT analysis (n=697 pan-cancer, 82 gliomas/sarcomas) rather than coded ALT-negative. | Passed (corrected in v1.0.1) |
 | ALT threshold dependence | WGS probability cutoffs 0.25, 0.50 and 0.75 are reported. | Passed |
 | Proxy-label mismatch | A direct WGS-phenotype task completed; transcriptome within-cancer AUROC was 0.716. | Passed |
 | Cell-line validation underpowered | Wu 2025 provides 947 matched expression/activity lines and 914 unambiguous ALT/TEL lines. | Passed with disclosed limitation |

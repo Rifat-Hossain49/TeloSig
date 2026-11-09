@@ -203,7 +203,8 @@ def build_external():
         "cancer": project.replace({"COAD": "CRC", "READ": "CRC"}),   # Barthel et al. pool COAD/READ as CRC
         "icgc_specimen": m["icgc_specimen_id"],
         "histology": m["histology_abbreviation"], "alt_probability": m["ALT_probability"],
-        "y_alt_wgs": (m["ALT_probability"] > 0.5).astype(int),
+        # Donors without a WGS ALT probability are unlabelled (NaN), not ALT-negative.
+        "y_alt_wgs": (m["ALT_probability"] > 0.5).astype(float).where(m["ALT_probability"].notna()),
         "tmm_mut": m["TMM_associated_mut_summary"],               # TERT_mod / ATRX_DAXX_trunc / Other
         "y_tert_mod": (m["TMM_associated_mut_summary"] == "TERT_mod").astype(int),
     }).dropna(subset=["patient"]).drop_duplicates("patient")
@@ -227,7 +228,7 @@ def main():
         ext["in_barthel"] = ext["patient"].isin(lab["patient"])
         ext.to_csv(C.PROC / "external_pcawg.csv", index=False)
         samples += sorted(set(ext["sample"]) - set(samples))
-        print(f"  TCGA donors with WGS-based TMM calls and RNA: {len(ext)} (ALT-like: {ext.y_alt_wgs.sum()}, "
+        print(f"  TCGA donors with WGS-based TMM calls and RNA: {len(ext)} (ALT-like: {int(ext.y_alt_wgs.sum())}, without ALT probability: {int(ext.alt_probability.isna().sum())}, "
               f"TERT-altered: {ext.y_tert_mod.sum()}); in Barthel cohort: {ext.in_barthel.sum()}")
 
     print("[3/6] glioma subtypes")

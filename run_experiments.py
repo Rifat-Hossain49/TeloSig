@@ -30,10 +30,10 @@ TASK_INFO = {
     "alt_noATRX": ("clf", "ALT-like, gliomas + sarcomas, without TERT/ATRX/DAXX"),
     "alt_pan":    ("clf", "ALT-like vs other, all cancer types (TERT removed)"),
     "alt_pheno":  ("clf", "ALT by whole-genome telomere-sequence features (Sieverling et al.)"),
-    "tel":        ("clf", "TERT-expressing (telomerase-positive) vs non-expressing, all cancers (TERT removed)"),
+    "tel":        ("clf", "TERT expression proxy: detectable vs undetectable TERT RNA, all cancers (TERT removed)"),
     "tl":         ("reg", "log tumor/normal telomere-length ratio, WGS/LPS-derived samples only"),
-    "tel_no5p15": ("clf", "Telomerase activation without TERT and without all 5p15 genes (TERT neighbourhood)"),
-    "tel_no5p":   ("clf", "Telomerase activation without TERT and without all chromosome-5p genes"),
+    "tel_no5p15": ("clf", "TERT expression proxy without TERT and without all 5p15 genes (TERT neighbourhood)"),
+    "tel_no5p":   ("clf", "TERT expression proxy without TERT and without all chromosome-5p genes"),
 }
 TRANSCRIPTOME_TASKS = {"alt", "alt_noATRX", "alt_pan", "alt_pheno", "tel", "tel_no5p15", "tel_no5p"}
 
