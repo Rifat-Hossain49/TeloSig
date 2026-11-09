@@ -627,7 +627,7 @@
             "date": "2026-11-08",
             "file": "results_v3/validation_external.csv",
             "previous_sha256": "9dd0df8f89211cf4521c656ff68c093ba42bca67c74275b36854a1fb4d10e18b",
-            "sha256": "f7e0fa42dafbee8b41c917f1eff1ead0f6536640c3f7d37ff0824e0935fcac92",
+            "sha256": "b1d250cedcb698097ca1f8f5d1fca0fab1830b9ce6df04ed47a8678bd15edc42",
             "reason": "ALT rows (tasks alt, alt_pan) recomputed with the five PCAWG donors lacking a WGS ALT probability treated as unlabelled instead of ALT-negative (data_build.py / validate.py fix). Recomputed with scikit-learn 1.6.1, numpy 2.1.3, pandas 2.3.3; the unmodified code reproduced every released ALT row exactly in this environment. TERT rows are unchanged."
         }
     ]
